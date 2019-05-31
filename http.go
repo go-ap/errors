@@ -316,8 +316,9 @@ func (f *forbidden) As(err interface{}) bool {
 }
 
 // Challenge adds a challenge token to be added to the HTTP response
-func (u *unauthorized) Challenge(c string, e error, s string, args ...interface{}) {
+func (u *unauthorized) Challenge(c string) *unauthorized {
 	u.challenge = c
+	return u
 }
 
 func Challenge (err error) string {

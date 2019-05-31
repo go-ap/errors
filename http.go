@@ -354,10 +354,10 @@ func HandleError(e error) ErrorHandlerFn {
 }
 
 type Http struct {
-	Code     int    `json:"status"`
-	Message  string `json:"message"`
-	Trace    *Stack `json:"trace,omitempty"`
-	Location string `json:"location,omitempty"`
+	Code     int    `jsonld:"status"`
+	Message  string `jsonld:"message"`
+	Trace    *Stack `jsonld:"trace,omitempty"`
+	Location string `jsonld:"location,omitempty"`
 }
 
 func HttpErrors(err error) (int, []Http) {
@@ -470,16 +470,16 @@ func httpErrorResponse(e error) int {
 
 // StackFunc is a function call in the backtrace
 type StackFunc struct {
-	Name    string  `json:"name"`
-	ArgPtrs []int64 `json:"name,omitempty"`
+	Name    string  `jsonld:"name"`
+	ArgPtrs []int64 `jsonld:"name,omitempty"`
 }
 
 // StackElement represents a stack call including file, line, and function call
 type StackElement struct {
-	File   string `json:"file"`
-	Line   int64  `json:"line"`
-	Callee string `json:"calee,omitempty"`
-	Addr   int64  `json:"address,omitempty"`
+	File   string `jsonld:"file"`
+	Line   int64  `jsonld:"line"`
+	Callee string `jsonld:"calee,omitempty"`
+	Addr   int64  `jsonld:"address,omitempty"`
 }
 
 // Stack is an array of stack elements representing the parsed relevant bits of a backtrace
@@ -563,7 +563,7 @@ func RenderErrors(r *http.Request, errs ...error) (int, []byte) {
 	var err error
 
 	m := struct {
-		Errors []Http `json:"errors"`
+		Errors []Http `jsonld:"errors"`
 	}{Errors: errMap}
 	if dat, err = jsonld.WithContext(ctxt(r)).Marshal(m); err != nil {
 		return http.StatusInternalServerError, dat

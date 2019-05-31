@@ -53,68 +53,68 @@ func wrapErr(err error, s string, args ...interface{}) Err {
 	return asErr
 }
 
-func NotFoundf(s string, args ...interface{}) error {
+func NotFoundf(s string, args ...interface{}) *notFound {
 	return &notFound{wrapErr(nil, s, args...)}
 }
 
-func NewNotFound(e error, s string, args ...interface{}) error {
+func NewNotFound(e error, s string, args ...interface{}) *notFound {
 	return &notFound{wrapErr(e, s, args...)}
 }
 
-func MethodNotAllowedf(s string, args ...interface{}) error {
+func MethodNotAllowedf(s string, args ...interface{}) *methodNotAllowed {
 	return &methodNotAllowed{wrapErr(nil, s, args...)}
 }
 
-func NewMethodNotAllowed(e error, s string, args ...interface{}) error {
+func NewMethodNotAllowed(e error, s string, args ...interface{}) *methodNotAllowed {
 	return &methodNotAllowed{wrapErr(e, s, args...)}
 }
 
-func NotValidf(s string, args ...interface{}) error {
+func NotValidf(s string, args ...interface{}) *notValid {
 	return &notValid{wrapErr(nil, s, args...)}
 }
 
-func NewNotValid(e error, s string, args ...interface{}) error {
+func NewNotValid(e error, s string, args ...interface{}) *notValid {
 	return &notValid{wrapErr(e, s, args...)}
 }
 
-func Forbiddenf(s string, args ...interface{}) error {
+func Forbiddenf(s string, args ...interface{}) *forbidden {
 	return &forbidden{wrapErr(nil, s, args...)}
 }
 
-func NewForbidden(e error, s string, args ...interface{}) error {
+func NewForbidden(e error, s string, args ...interface{}) *forbidden {
 	return &forbidden{wrapErr(e, s, args...)}
 }
 
-func NotImplementedf(s string, args ...interface{}) error {
+func NotImplementedf(s string, args ...interface{}) *notImplemented {
 	return &notImplemented{wrapErr(nil, s, args...)}
 }
 
-func NewNotImplemented(e error, s string, args ...interface{}) error {
+func NewNotImplemented(e error, s string, args ...interface{}) *notImplemented {
 	return &notImplemented{wrapErr(e, s, args...)}
 }
 
-func BadRequestf(s string, args ...interface{}) error {
+func BadRequestf(s string, args ...interface{}) *badRequest {
 	return &badRequest{wrapErr(nil, s, args...)}
 }
-func NewBadRequest(e error, s string, args ...interface{}) error {
+func NewBadRequest(e error, s string, args ...interface{}) *badRequest {
 	return &badRequest{wrapErr(e, s, args...)}
 }
-func Unauthorizedf(s string, args ...interface{}) error {
+func Unauthorizedf(s string, args ...interface{}) *unauthorized {
 	return &unauthorized{Err: wrapErr(nil, s, args...)}
 }
-func NewUnauthorized(e error, s string, args ...interface{}) error {
+func NewUnauthorized(e error, s string, args ...interface{}) *unauthorized {
 	return &unauthorized{Err: wrapErr(e, s, args...)}
 }
-func NotSupportedf(s string, args ...interface{}) error {
+func NotSupportedf(s string, args ...interface{}) *notSupported {
 	return &notSupported{wrapErr(nil, s, args...)}
 }
-func NewNotSupported(e error, s string, args ...interface{}) error {
+func NewNotSupported(e error, s string, args ...interface{}) *notSupported {
 	return &notSupported{wrapErr(e, s, args...)}
 }
-func NotTimeoutf(s string, args ...interface{}) error {
+func NewTimeoutf(s string, args ...interface{}) *timeout {
 	return &timeout{wrapErr(nil, s, args...)}
 }
-func NewTimeout(e error, s string, args ...interface{}) error {
+func NewTimeout(e error, s string, args ...interface{}) *timeout {
 	return &timeout{wrapErr(e, s, args...)}
 }
 func IsBadRequest(e error) bool {

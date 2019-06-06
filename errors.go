@@ -45,7 +45,7 @@ func Annotatef(e error, s string, args ...interface{}) error {
 }
 
 // Newf creaates a new error
-func Newf(s string, args ...interface{}) error {
+func Newf(s string, args ...interface{}) *Err {
 	err := wrap(nil, s, args...)
 	return &err
 }

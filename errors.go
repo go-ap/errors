@@ -39,7 +39,7 @@ func (e Err) StackTrace() []byte {
 }
 
 // Annotatef wraps an error with new message
-func Annotatef(e error, s string, args ...interface{}) error {
+func Annotatef(e error, s string, args ...interface{}) *Err {
 	err := wrap(e, s, args...)
 	return &err
 }

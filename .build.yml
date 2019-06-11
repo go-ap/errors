@@ -11,16 +11,14 @@ tasks:
   - setup: |
       cd errors && go mod download
   - tests: |
-      cd errors
-      go test -v ./...
+      cd errors && make test
   - coverage: |
       set -a +x
-      source ~/.code-cov.sh
-      cd errors
-      go test -cover -coverprofile errors.coverprofile ./...
+      cd errors && make coverage
       GIT_SHA=$(git rev-parse --verify HEAD)
       GIT_BRANCH=$(git name-rev --name-only HEAD)
+      source ~/.code-cov.sh
       curl -X POST \
           --data-binary @errors.coverprofile \
-          -H 'Accept: application/json' \
-          "https://codecov.io/upload/v2?commit=${GIT_SHA}&token=${ERRORS_TOKEN}&branch=${GIT_BRANCH}&service=custom"
+           -H 'Accept: application/json' \
+          "https://codecov.io/upload/v2?commit=${GIT_SHA}&token=${PUB_TOKEN}&branch=${GIT_BRANCH}&service=custom"

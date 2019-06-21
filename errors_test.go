@@ -87,7 +87,7 @@ func TestErr_As(t *testing.T) {
 		t.Errorf("%T file should equal %T's, received %s, expected %s", e1, e, e1.f, e.f)
 	}
 	if !bytes.Equal(e1.t, e.t) {
-		t.Errorf("%T trace should equal %T's, received %s, expected %s", e1, e, e1.t, e.t)
+		t.Errorf("%T trace should equal %T's, received %2x, expected %2x", e1, e, e1.t, e.t)
 	}
 	if e1.c != e.c {
 		t.Errorf("%T parent error should equal %T's, received %T[%s], expected %T[%s]", e1, e, e1.c, e1.c, e.c, e.c)
@@ -98,6 +98,18 @@ func TestErr_As(t *testing.T) {
 	}
 	if e2.m != e.m {
 		t.Errorf("%T message should equal %T's, received %s, expected %s", e2, e, e2.m, e.m)
+	}
+	if e2.l != e.l {
+		t.Errorf("%T line should equal %T's, received %d, expected %d", e2, e, e2.l, e.l)
+	}
+	if e2.f != e.f {
+		t.Errorf("%T file should equal %T's, received %s, expected %s", e2, e, e2.f, e.f)
+	}
+	if !bytes.Equal(e2.t, e.t) {
+		t.Errorf("%T trace should equal %T's, received %2x, expected %2x", e2, e, e2.t, e.t)
+	}
+	if e2.c != e.c {
+		t.Errorf("%T parent error should equal %T's, received %T[%s], expected %T[%s]", e2, e, e2.c, e2.c, e.c, e.c)
 	}
 }
 

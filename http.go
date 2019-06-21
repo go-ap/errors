@@ -52,39 +52,58 @@ func wrapErr(err error, s string, args ...interface{}) Err {
 	xerrors.As(e, &asErr)
 	return asErr
 }
-
+func NotFoundf(s string, args ...interface{}) *notFound {
+	return &notFound{wrapErr(nil, s, args...)}
+}
 func NewNotFound(e error, s string, args ...interface{}) *notFound {
 	return &notFound{wrapErr(e, s, args...)}
+}
+func MethodNotAllowedf(s string, args ...interface{}) *methodNotAllowed {
+	return &methodNotAllowed{wrapErr(nil, s, args...)}
 }
 
 func NewMethodNotAllowed(e error, s string, args ...interface{}) *methodNotAllowed {
 	return &methodNotAllowed{wrapErr(e, s, args...)}
 }
-
+func NotValidf(s string, args ...interface{}) *notValid {
+	return &notValid{wrapErr(nil, s, args...)}
+}
 func NewNotValid(e error, s string, args ...interface{}) *notValid {
 	return &notValid{wrapErr(e, s, args...)}
 }
-
+func Forbiddenf(s string, args ...interface{}) *forbidden {
+	return &forbidden{wrapErr(nil, s, args...)}
+}
 func NewForbidden(e error, s string, args ...interface{}) *forbidden {
 	return &forbidden{wrapErr(e, s, args...)}
 }
-
+func NotImplementedf(s string, args ...interface{}) *notImplemented {
+	return &notImplemented{wrapErr(nil, s, args...)}
+}
 func NewNotImplemented(e error, s string, args ...interface{}) *notImplemented {
 	return &notImplemented{wrapErr(e, s, args...)}
 }
-
+func BadRequestf(s string, args ...interface{}) *badRequest {
+	return &badRequest{wrapErr(nil, s, args...)}
+}
 func NewBadRequest(e error, s string, args ...interface{}) *badRequest {
 	return &badRequest{wrapErr(e, s, args...)}
 }
-
+func Unauthorizedf(s string, args ...interface{}) *unauthorized {
+	return &unauthorized{Err: wrapErr(nil, s, args...)}
+}
 func NewUnauthorized(e error, s string, args ...interface{}) *unauthorized {
 	return &unauthorized{Err: wrapErr(e, s, args...)}
 }
-
+func NotSupportedf(s string, args ...interface{}) *notSupported {
+	return &notSupported{wrapErr(nil, s, args...)}
+}
 func NewNotSupported(e error, s string, args ...interface{}) *notSupported {
 	return &notSupported{wrapErr(e, s, args...)}
 }
-
+func Timeoutf(s string, args ...interface{}) *timeout {
+	return &timeout{wrapErr(nil, s, args...)}
+}
 func NewTimeout(e error, s string, args ...interface{}) *timeout {
 	return &timeout{wrapErr(e, s, args...)}
 }
@@ -348,7 +367,7 @@ func (u *unauthorized) Challenge(c string) *unauthorized {
 }
 
 // Challenge returns the challenge of the err parameter if it's an unauthorized type error
-func Challenge (err error) string {
+func Challenge(err error) string {
 	un := unauthorized{}
 	if ok := xerrors.As(err, &un); ok {
 		return un.challenge

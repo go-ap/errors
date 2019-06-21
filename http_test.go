@@ -6,6 +6,105 @@ import (
 	"testing"
 )
 
+func TestBadRequestf(t *testing.T) {
+	errMsg := "test"
+	e := BadRequestf(errMsg)
+	if e.m != errMsg {
+		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
+	}
+	if e.c != nil {
+		t.Errorf("Invalid %T parent error %T[%s], expected nil", e, e.c, e.c)
+	}
+}
+
+func TestForbiddenf(t *testing.T) {
+	errMsg := "test"
+	e := Forbiddenf(errMsg)
+	if e.m != errMsg {
+		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
+	}
+	if e.c != nil {
+		t.Errorf("Invalid %T parent error %T[%s], expected nil", e, e.c, e.c)
+	}
+}
+
+func TestMethodNotAllowedf(t *testing.T) {
+	errMsg := "test"
+	e := MethodNotAllowedf(errMsg)
+	if e.m != errMsg {
+		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
+	}
+	if e.c != nil {
+		t.Errorf("Invalid %T parent error %T[%s], expected nil", e, e.c, e.c)
+	}
+}
+
+func TestMethodNotFoundf(t *testing.T) {
+	errMsg := "test"
+	e := NotFoundf(errMsg)
+	if e.m != errMsg {
+		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
+	}
+	if e.c != nil {
+		t.Errorf("Invalid %T parent error %T[%s], expected nil", e, e.c, e.c)
+	}
+}
+
+func TestNotImplementedf(t *testing.T) {
+	errMsg := "test"
+	e := NotImplementedf(errMsg)
+	if e.m != errMsg {
+		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
+	}
+	if e.c != nil {
+		t.Errorf("Invalid %T parent error %T[%s], expected nil", e, e.c, e.c)
+	}
+}
+
+func TestNotSupportedf(t *testing.T) {
+	errMsg := "test"
+	e := NotSupportedf(errMsg)
+	if e.m != errMsg {
+		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
+	}
+	if e.c != nil {
+		t.Errorf("Invalid %T parent error %T[%s], expected nil", e, e.c, e.c)
+	}
+}
+
+func TestNotValidf(t *testing.T) {
+	errMsg := "test"
+	e := NotValidf(errMsg)
+	if e.m != errMsg {
+		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
+	}
+	if e.c != nil {
+		t.Errorf("Invalid %T parent error %T[%s], expected nil", e, e.c, e.c)
+	}
+}
+
+func TestTimeoutf(t *testing.T) {
+	errMsg := "test"
+	e := Timeoutf(errMsg)
+	if e.m != errMsg {
+		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
+	}
+	if e.c != nil {
+		t.Errorf("Invalid %T parent error %T[%s], expected nil", e, e.c, e.c)
+	}
+}
+
+func TestUnauthorizedf(t *testing.T) {
+	errMsg := "test"
+	e := Unauthorizedf(errMsg)
+	if e.m != errMsg {
+		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
+	}
+	if e.c != nil {
+		t.Errorf("Invalid %T parent error %T[%s], expected nil", e, e.c, e.c)
+	}
+}
+
 func TestNewBadRequest(t *testing.T) {
 	errMsg := "test"
 	e := NewBadRequest(err, errMsg)
@@ -85,9 +184,12 @@ func TestNewNotValid(t *testing.T) {
 
 func TestNewTimeout(t *testing.T) {
 	errMsg := "test"
-	e := NewTimeout(nil, errMsg)
+	e := NewTimeout(err, errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
+	}
+	if e.c != err {
+		t.Errorf("Invalid %T parent error %T[%s], expected %T[%s]", e, e.c, e.c, err, err)
 	}
 }
 

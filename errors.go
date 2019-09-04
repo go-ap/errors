@@ -23,7 +23,7 @@ func (e Err) Error() string {
 	return e.m
 }
 
-// Unwrap implements the xerrors.Wrapper interface
+// Unwrap implements the errors.Wrapper interface
 func (e Err) Unwrap() error {
 	return e.c
 }
@@ -56,7 +56,7 @@ func Errorf(s string, args ...interface{}) error {
 	return &err
 }
 
-// As implements support for xerrors.As
+// As implements support for errors.As
 func (e *Err) As(err interface{}) bool {
 	switch x := err.(type) {
 	case **Err:

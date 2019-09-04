@@ -2,9 +2,9 @@ package errors
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/go-ap/jsonld"
-	"golang.org/x/xerrors"
 	"net/http"
 	"strconv"
 )
@@ -46,10 +46,14 @@ type timeout struct {
 	Err
 }
 
+type badGateway struct {
+	Err
+}
+
 func wrapErr(err error, s string, args ...interface{}) Err {
 	e := Annotatef(err, s, args...)
 	asErr := Err{}
-	xerrors.As(e, &asErr)
+	errors.As(e, &asErr)
 	return asErr
 }
 func NotFoundf(s string, args ...interface{}) *notFound {
@@ -107,6 +111,12 @@ func Timeoutf(s string, args ...interface{}) *timeout {
 func NewTimeout(e error, s string, args ...interface{}) *timeout {
 	return &timeout{wrapErr(e, s, args...)}
 }
+func BadGatewayf(s string, args ...interface{}) *badGateway {
+	return &badGateway{wrapErr(nil, s, args...)}
+}
+func NewBadGateway(e error, s string, args ...interface{}) *badGateway {
+	return &badGateway{wrapErr(e, s, args...)}
+}
 func IsBadRequest(e error) bool {
 	_, okp := e.(*badRequest)
 	_, oks := e.(badRequest)
@@ -152,6 +162,12 @@ func IsNotValid(e error) bool {
 	_, oks := e.(notValid)
 	return okp || oks
 }
+
+func IsBadGateway(e error) bool {
+	_, okp := e.(*badGateway)
+	_, oks := e.(badGateway)
+	return okp || oks
+}
 func (n notFound) Is(e error) bool {
 	return IsNotFound(e)
 }
@@ -178,6 +194,9 @@ func (m methodNotAllowed) Is(e error) bool {
 }
 func (f forbidden) Is(e error) bool {
 	return IsForbidden(e)
+}
+func (b badGateway) Is(e error) bool {
+	return IsBadGateway(e)
 }
 func (n notFound) Unwrap() error {
 	return n.Err.Unwrap()
@@ -206,8 +225,11 @@ func (m methodNotAllowed) Unwrap() error {
 func (f forbidden) Unwrap() error {
 	return f.Err.Unwrap()
 }
+func (b badGateway) Unwrap() error {
+	return b.Err.Unwrap()
+}
 
-// As is used by the xerrors.As() function to coerce the method's parameter to the one of the receiver
+// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
 //  if the underlying logic of the receiver's type can understand it.
 // In this case we're converting a notFound to its underlying type Err.
 func (n *notFound) As(err interface{}) bool {
@@ -224,7 +246,7 @@ func (n *notFound) As(err interface{}) bool {
 	return true
 }
 
-// As is used by the xerrors.As() function to coerce the method's parameter to the one of the receiver
+// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
 //  if the underlying logic of the receiver's type can understand it.
 // In this case we're converting a notValid to its underlying type Err.
 func (n *notValid) As(err interface{}) bool {
@@ -241,7 +263,7 @@ func (n *notValid) As(err interface{}) bool {
 	return true
 }
 
-// As is used by the xerrors.As() function to coerce the method's parameter to the one of the receiver
+// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
 //  if the underlying logic of the receiver's type can understand it.
 // In this case we're converting a notImplemented to its underlying type Err.
 func (n *notImplemented) As(err interface{}) bool {
@@ -258,7 +280,7 @@ func (n *notImplemented) As(err interface{}) bool {
 	return true
 }
 
-// As is used by the xerrors.As() function to coerce the method's parameter to the one of the receiver
+// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
 //  if the underlying logic of the receiver's type can understand it.
 // In this case we're converting a notSupported to its underlying type Err.
 func (n *notSupported) As(err interface{}) bool {
@@ -275,7 +297,7 @@ func (n *notSupported) As(err interface{}) bool {
 	return true
 }
 
-// As is used by the xerrors.As() function to coerce the method's parameter to the one of the receiver
+// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
 //  if the underlying logic of the receiver's type can understand it.
 // In this case we're converting a badRequest to its underlying type Err.
 func (b *badRequest) As(err interface{}) bool {
@@ -292,7 +314,7 @@ func (b *badRequest) As(err interface{}) bool {
 	return true
 }
 
-// As is used by the xerrors.As() function to coerce the method's parameter to the one of the receiver
+// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
 //  if the underlying logic of the receiver's type can understand it.
 // In this case we're converting a timeout to its underlying type Err.
 func (t *timeout) As(err interface{}) bool {
@@ -309,7 +331,7 @@ func (t *timeout) As(err interface{}) bool {
 	return true
 }
 
-// As is used by the xerrors.As() function to coerce the method's parameter to the one of the receiver
+// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
 //  if the underlying logic of the receiver's type can understand it.
 // In this case we're converting a unauthorized to its underlying type Err.
 func (u *unauthorized) As(err interface{}) bool {
@@ -326,7 +348,7 @@ func (u *unauthorized) As(err interface{}) bool {
 	return true
 }
 
-// As is used by the xerrors.As() function to coerce the method's parameter to the one of the receiver
+// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
 //  if the underlying logic of the receiver's type can understand it.
 // In this case we're converting a methodNotAllowed to its underlying type Err.
 func (m *methodNotAllowed) As(err interface{}) bool {
@@ -343,7 +365,7 @@ func (m *methodNotAllowed) As(err interface{}) bool {
 	return true
 }
 
-// As is used by the xerrors.As() function to coerce the method's parameter to the one of the receiver
+// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
 //  if the underlying logic of the receiver's type can understand it.
 // In this case we're converting a forbidden to its underlying type Err.
 func (f *forbidden) As(err interface{}) bool {
@@ -359,6 +381,22 @@ func (f *forbidden) As(err interface{}) bool {
 	}
 	return true
 }
+// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
+//  if the underlying logic of the receiver's type can understand it.
+// In this case we're converting a badGateway to its underlying type Err.
+func (b *badGateway) As(err interface{}) bool {
+	switch x := err.(type) {
+	case **badGateway:
+		*x = b
+	case *badGateway:
+		*x = *b
+	case *Err:
+		return b.Err.As(x)
+	default:
+		return false
+	}
+	return true
+}
 
 // Challenge adds a challenge token to be added to the HTTP response
 func (u *unauthorized) Challenge(c string) *unauthorized {
@@ -369,7 +407,7 @@ func (u *unauthorized) Challenge(c string) *unauthorized {
 // Challenge returns the challenge of the err parameter if it's an unauthorized type error
 func Challenge(err error) string {
 	un := unauthorized{}
-	if ok := xerrors.As(err, &un); ok {
+	if ok := errors.As(err, &un); ok {
 		return un.challenge
 	}
 	return ""
@@ -425,7 +463,7 @@ func HttpErrors(err error) (int, []Http) {
 			}
 		default:
 			local := new(Err)
-			if ok := xerrors.As(err, local); ok {
+			if ok := errors.As(err, local); ok {
 				if IncludeBacktrace {
 					trace, _ = parseStack(local.StackTrace())
 					f, l := local.Location()
@@ -447,7 +485,7 @@ func HttpErrors(err error) (int, []Http) {
 	code := httpErrorResponse(err)
 	https = append(https, load(err))
 	for {
-		if err = xerrors.Unwrap(err); err != nil {
+		if err = errors.Unwrap(err); err != nil {
 			https = append(https, load(err))
 		} else {
 			break
@@ -499,10 +537,14 @@ func httpErrorResponse(e error) int {
 	//  http.StatusUnavailableForLegalReason
 
 	//  http.StatusInternalServerError
-	//  http.StatusInternalServerError
 	if IsNotImplemented(e) {
 		return http.StatusNotImplemented
 	}
+	if IsBadGateway(e) {
+		return http.StatusBadGateway
+	}
+	//  http.StatusServiceUnavailable
+	//  http.StatusGatewayTimeout
 	if IsNotSupported(e) {
 		return http.StatusHTTPVersionNotSupported
 	}

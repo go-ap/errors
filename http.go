@@ -56,6 +56,55 @@ func wrapErr(err error, s string, args ...interface{}) Err {
 	errors.As(e, &asErr)
 	return asErr
 }
+func WrapWithStatus(status int, err error, s string, args ...interface{}) error {
+	switch status {
+	case http.StatusBadRequest:
+		return NewBadRequest(err, s, args...)
+	case http.StatusUnauthorized:
+		return NewUnauthorized(err, s, args...)
+	// http.StatusPaymentRequired
+	case http.StatusForbidden:
+		return NewForbidden(err, s, args...)
+	case http.StatusNotFound:
+		return NewNotFound(err, s, args...)
+	case http.StatusMethodNotAllowed:
+		return NewMethodNotAllowed(err, s, args...)
+	case http.StatusNotAcceptable:
+		return NewNotValid(err, s, args...)
+	// case http.StatusProxyAuthRequired
+	// case http.StatusRequestTimeout
+	//  TODO(marius): http.StatusConflict
+	//  TODO(marius): http.StatusGone
+	// case http.StatusLengthRequres
+	// case http.StatusPreconditionFailed
+	// case http.StatusRequestEntityTooLarge
+	// case http.StatusRequestURITooLong
+	//  TODO(marius): http.StatusUnsupportedMediaType
+	// case http.StatusRequestedRangeNotSatisfiable
+	// case http.StatusExpectationFailed
+	// case http.StatusTeapot
+	// case http.StatusMisdirectedRequest
+	// case http.StatusUnprocessableEntity
+	// case http.StatusLocked
+	// case http.StatusFailedDependency
+	// case http.StatusTooEarly
+	// case http.StatusTooManyRequests
+	// case http.StatusRequestHeaderFieldsTooLarge
+	// case http.StatusUnavailableForLegalReason
+	// case http.StatusInternalServerError
+	case http.StatusNotImplemented:
+		return NewNotImplemented(err, s, args...)
+	case http.StatusBadGateway:
+		return NewBadGateway(err, s, args...)
+	// case http.StatusServiceUnavailable
+	// case http.StatusGatewayTimeout
+	case http.StatusHTTPVersionNotSupported:
+		return NewNotSupported(err, s, args...)
+	case http.StatusGatewayTimeout:
+		return NewTimeout(err, s, args...)
+	}
+	return wrapErr(err, s, args...)
+}
 func NotFoundf(s string, args ...interface{}) *notFound {
 	return &notFound{wrapErr(nil, s, args...)}
 }
@@ -65,7 +114,6 @@ func NewNotFound(e error, s string, args ...interface{}) *notFound {
 func MethodNotAllowedf(s string, args ...interface{}) *methodNotAllowed {
 	return &methodNotAllowed{wrapErr(nil, s, args...)}
 }
-
 func NewMethodNotAllowed(e error, s string, args ...interface{}) *methodNotAllowed {
 	return &methodNotAllowed{wrapErr(e, s, args...)}
 }

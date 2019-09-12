@@ -1218,3 +1218,7 @@ func TestHandleError(t *testing.T) {
 func TestRenderErrors(t *testing.T) {
 	t.Skipf("TODO")
 }
+
+func TestWrapWithStatus(t *testing.T) {
+	t.Skipf("TODO")
+}

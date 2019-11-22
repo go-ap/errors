@@ -1,13 +1,17 @@
 package errors
 
 import (
+	"bytes"
 	"fmt"
+	"os"
 	"runtime"
 	"runtime/debug"
 )
 
 // IncludeBacktrace is a static variable that decides if when creating an error we store the backtrace with it.
 var IncludeBacktrace = true
+var goPath = os.Getenv("GOPATH")
+var hPath = os.Getenv("HOME")
 
 // Err is our custom error type that can store backtrace, file and line number
 type Err struct {
@@ -77,7 +81,9 @@ func wrap(e error, s string, args ...interface{}) Err {
 	if IncludeBacktrace {
 		skip := 2
 		_, err.f, err.l, _ = runtime.Caller(skip)
-		err.t = debug.Stack()
+		sStack := bytes.Replace(debug.Stack(), []byte(goPath), []byte("$GOPATH"), -1)
+		sStack = bytes.Replace(sStack, []byte(hPath), []byte("$HOME"), -1)
+		err.t = sStack
 	}
 	return err
 }

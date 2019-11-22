@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 	"runtime/debug"
+	"strings"
 )
 
 // IncludeBacktrace is a static variable that decides if when creating an error we store the backtrace with it.
@@ -84,6 +85,7 @@ func wrap(e error, s string, args ...interface{}) Err {
 		sStack := bytes.Replace(debug.Stack(), []byte(goPath), []byte("$GOPATH"), -1)
 		sStack = bytes.Replace(sStack, []byte(hPath), []byte("$HOME"), -1)
 		err.t = sStack
+		err.f = strings.Replace(err.f, hPath, "$HOME", -1)
 	}
 	return err
 }

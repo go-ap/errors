@@ -74,6 +74,11 @@ func (e *Err) As(err interface{}) bool {
 	return true
 }
 
+const (
+	homeVal = "$HOME"
+	goPathVal = "$GOPATH"
+)
+
 func wrap(e error, s string, args ...interface{}) Err {
 	err := Err{
 		c: e,
@@ -82,10 +87,10 @@ func wrap(e error, s string, args ...interface{}) Err {
 	if IncludeBacktrace {
 		skip := 2
 		_, err.f, err.l, _ = runtime.Caller(skip)
-		sStack := bytes.Replace(debug.Stack(), []byte(goPath), []byte("$GOPATH"), -1)
-		sStack = bytes.Replace(sStack, []byte(hPath), []byte("$HOME"), -1)
+		sStack := bytes.Replace(debug.Stack(), []byte(goPath), []byte(goPathVal), -1)
+		sStack = bytes.Replace(sStack, []byte(hPath), []byte(homeVal), -1)
 		err.t = sStack
-		err.f = strings.Replace(err.f, hPath, "$HOME", -1)
+		err.f = strings.Replace(err.f, hPath, homeVal, -1)
 	}
 	return err
 }

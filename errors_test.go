@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -16,8 +17,15 @@ func TestAnnotatef(t *testing.T) {
 	if te.c != err {
 		t.Errorf("Invalid parent error %T:%s, expected %T:%s", te.c, te.c, err, err)
 	}
-	if te.f != ff {
-		t.Errorf("Invalid file %s, expected %s", te.f, ff)
+	if strings.Contains(te.f, homeVal) {
+		te.f = strings.Replace(te.f, homeVal, "", 1)
+		if !strings.Contains(ff, te.f) {
+			t.Errorf("Invalid file %s, expected %s%s", te.f, homeVal, ff)
+		}
+	} else {
+		if te.f != ff {
+			t.Errorf("Invalid file %s, expected %s", te.f, ff)
+		}
 	}
 	if te.l != ll-1 {
 		t.Errorf("Invalid line %d, expected %d", te.l, ll-1)
@@ -34,8 +42,15 @@ func TestNewf(t *testing.T) {
 	if te.c != nil {
 		t.Errorf("Invalid parent error %T:%s, expected nil", te.c, te.c)
 	}
-	if te.f != ff {
-		t.Errorf("Invalid file %s, expected %s", te.f, ff)
+	if strings.Contains(te.f, homeVal) {
+		te.f = strings.Replace(te.f, homeVal, "", 1)
+		if !strings.Contains(ff, te.f) {
+			t.Errorf("Invalid file %s, expected %s%s", te.f, homeVal, ff)
+		}
+	} else {
+		if te.f != ff {
+			t.Errorf("Invalid file %s, expected %s", te.f, ff)
+		}
 	}
 	if te.l != ll-1 {
 		t.Errorf("Invalid line %d, expected %d", te.l, ll-1)
@@ -53,8 +68,15 @@ func TestErrorf(t *testing.T) {
 		if te.c != nil {
 			t.Errorf("Invalid parent error %T:%s, expected nil", te.c, te.c)
 		}
-		if te.f != ff {
-			t.Errorf("Invalid file %s, expected %s", te.f, ff)
+		if strings.Contains(te.f, homeVal) {
+			te.f = strings.Replace(te.f, homeVal, "", 1)
+			if !strings.Contains(ff, te.f) {
+				t.Errorf("Invalid file %s, expected %s%s", te.f, homeVal, ff)
+			}
+		} else {
+			if te.f != ff {
+				t.Errorf("Invalid file %s, expected %s", te.f, ff)
+			}
 		}
 		if te.l != ll-1 {
 			t.Errorf("Invalid line %d, expected %d", te.l, ll-1)

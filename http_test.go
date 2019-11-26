@@ -3,6 +3,7 @@ package errors
 import (
 	"bytes"
 	"fmt"
+	"runtime/debug"
 	"testing"
 )
 
@@ -1221,4 +1222,115 @@ func TestRenderErrors(t *testing.T) {
 
 func TestWrapWithStatus(t *testing.T) {
 	t.Skipf("TODO")
+}
+
+func TestStackParse(t *testing.T) {
+	stack := `http: panic serving 127.0.0.1:42964: runtime error: index out of range [44] with length 44
+goroutine 9 [running]:
+net/http.(*conn).serve.func1(0xc0001ce0a0)
+	/usr/lib/go/src/net/http/server.go:1767 +0x139
+panic(0xae9880, 0xc00047c460)
+	/usr/lib/go/src/runtime/panic.go:679 +0x1b2
+github.com/go-ap/errors.parseStack(0xc000358000, 0xe527, 0x10000, 0xc0004222d0, 0x1, 0x0)
+	/home/build/go/pkg/mod/github.com/go-ap/errors@v0.0.0-20191123201507-86232ca294a2/http.go:643 +0x697
+github.com/go-ap/errors.HttpErrors.func1(0xc34f20, 0xc0002d6180, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
+	/home/build/go/pkg/mod/github.com/go-ap/errors@v0.0.0-20191123201507-86232ca294a2/http.go:516 +0x255
+github.com/go-ap/errors.HttpErrors(0xc34f20, 0xc0002d6180, 0x0, 0x10afe00, 0xc0000bc000, 0xc34f20)
+	/home/build/go/pkg/mod/github.com/go-ap/errors@v0.0.0-20191123201507-86232ca294a2/http.go:534 +0xa5
+github.com/go-ap/errors.RenderErrors(0xc0002fee00, 0xc00061e9f0, 0x1, 0x1, 0xc0002d6180, 0x0, 0xc000028140, 0x40)
+	/home/build/go/pkg/mod/github.com/go-ap/errors@v0.0.0-20191123201507-86232ca294a2/http.go:694 +0xcb
+github.com/go-ap/errors.ErrorHandlerFn.ServeHTTP(0xc000406080, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fee00)
+	/home/build/go/pkg/mod/github.com/go-ap/errors@v0.0.0-20191123201507-86232ca294a2/http.go:473 +0x226
+github.com/go-ap/handlers.ActivityHandlerFn.ServeHTTP(0xb652b0, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fee00)
+	/home/build/go/pkg/mod/github.com/go-ap/handlers@v0.0.0-20191124120223-6d767f8fa46e/handlers.go:81 +0x7b2
+github.com/go-ap/fedbox/app.Validator.func1.1(0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/home/build/fedbox/app/middleware.go:34 +0x1d2
+net/http.HandlerFunc.ServeHTTP(0xc0001ed7d0, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/usr/lib/go/src/net/http/server.go:2007 +0x44
+github.com/go-chi/chi.(*ChainHandler).ServeHTTP(0xc000236080, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/chain.go:31 +0x52
+github.com/go-chi/chi.(*Mux).routeHTTP(0xc000091980, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/mux.go:425 +0x278
+net/http.HandlerFunc.ServeHTTP(0xc000226200, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/usr/lib/go/src/net/http/server.go:2007 +0x44
+github.com/go-chi/chi.(*Mux).ServeHTTP(0xc000091980, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/mux.go:70 +0x513
+github.com/go-chi/chi.(*Mux).Mount.func1(0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/mux.go:292 +0x124
+net/http.HandlerFunc.ServeHTTP(0xc000234100, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/usr/lib/go/src/net/http/server.go:2007 +0x44
+github.com/go-chi/chi.(*Mux).routeHTTP(0xc000091920, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/mux.go:425 +0x278
+net/http.HandlerFunc.ServeHTTP(0xc0002261f0, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/usr/lib/go/src/net/http/server.go:2007 +0x44
+github.com/go-chi/chi.(*Mux).ServeHTTP(0xc000091920, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/mux.go:70 +0x513
+github.com/go-chi/chi.(*Mux).Mount.func1(0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/mux.go:292 +0x124
+net/http.HandlerFunc.ServeHTTP(0xc0002341a0, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/usr/lib/go/src/net/http/server.go:2007 +0x44
+github.com/go-chi/chi.(*ChainHandler).ServeHTTP(0xc000236f40, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/chain.go:31 +0x52
+github.com/go-chi/chi.(*Mux).routeHTTP(0xc0000917a0, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/mux.go:425 +0x278
+net/http.HandlerFunc.ServeHTTP(0xc0002261c0, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/usr/lib/go/src/net/http/server.go:2007 +0x44
+github.com/go-chi/chi.(*Mux).ServeHTTP(0xc0000917a0, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/mux.go:70 +0x513
+github.com/go-chi/chi.(*Mux).Mount.func1(0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/mux.go:292 +0x124
+net/http.HandlerFunc.ServeHTTP(0xc000234240, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/usr/lib/go/src/net/http/server.go:2007 +0x44
+github.com/go-chi/chi.(*Mux).routeHTTP(0xc000091740, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/mux.go:425 +0x278
+net/http.HandlerFunc.ServeHTTP(0xc0002261b0, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fec00)
+	/usr/lib/go/src/net/http/server.go:2007 +0x44
+github.com/go-ap/fedbox/app.ActorFromAuthHeader.func1.1(0x7fd1e675c058, 0xc0004560c0, 0xc0002fea00)
+	/home/build/fedbox/app/middleware.go:60 +0x40d
+net/http.HandlerFunc.ServeHTTP(0xc000095e80, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fea00)
+	/usr/lib/go/src/net/http/server.go:2007 +0x44
+github.com/go-chi/chi/middleware.GetHead.func1(0x7fd1e675c058, 0xc0004560c0, 0xc0002fea00)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/middleware/get_head.go:37 +0x171
+net/http.HandlerFunc.ServeHTTP(0xc000083fa0, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fea00)
+	/usr/lib/go/src/net/http/server.go:2007 +0x44
+github.com/go-chi/chi.(*Mux).ServeHTTP(0xc000091740, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fea00)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/mux.go:70 +0x513
+github.com/go-chi/chi.(*Mux).Mount.func1(0x7fd1e675c058, 0xc0004560c0, 0xc0002fea00)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/mux.go:292 +0x124
+net/http.HandlerFunc.ServeHTTP(0xc000234480, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fea00)
+	/usr/lib/go/src/net/http/server.go:2007 +0x44
+github.com/go-chi/chi.(*Mux).routeHTTP(0xc0000916e0, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fea00)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/mux.go:425 +0x278
+net/http.HandlerFunc.ServeHTTP(0xc000226420, 0x7fd1e675c058, 0xc0004560c0, 0xc0002fea00)
+	/usr/lib/go/src/net/http/server.go:2007 +0x44
+github.com/go-chi/chi/middleware.RequestLogger.func1.1(0xc41a20, 0xc0001c4000, 0xc0002fe900)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/middleware/logger.go:46 +0x2be
+net/http.HandlerFunc.ServeHTTP(0xc000248720, 0xc41a20, 0xc0001c4000, 0xc0002fe900)
+	/usr/lib/go/src/net/http/server.go:2007 +0x44
+github.com/go-ap/fedbox/app.Repo.func1.1(0xc41a20, 0xc0001c4000, 0xc0002fe800)
+	/home/build/fedbox/app/middleware.go:21 +0x1d2
+net/http.HandlerFunc.ServeHTTP(0xc000248750, 0xc41a20, 0xc0001c4000, 0xc0002fe800)
+	/usr/lib/go/src/net/http/server.go:2007 +0x44
+github.com/go-chi/chi.(*Mux).ServeHTTP(0xc0000916e0, 0xc41a20, 0xc0001c4000, 0xc0002fe400)
+	/home/build/go/pkg/mod/github.com/go-chi/chi@v4.0.2+incompatible/mux.go:82 +0x2b2
+net/http.serverHandler.ServeHTTP(0xc0002120e0, 0xc41a20, 0xc0001c4000, 0xc0002fe400)
+	/usr/lib/go/src/net/http/server.go:2802 +0xa4
+net/http.(*conn).serve(0xc0001ce0a0, 0xc450e0, 0xc00001e300)
+	/usr/lib/go/src/net/http/server.go:1890 +0x875
+created by net/http.(*Server).Serve
+	/usr/lib/go/src/net/http/server.go:2927 +0x38e`
+
+
+
+	b := []byte(stack)
+	if len(b) > 0 {}
+	st, err := parseStack(debug.Stack())
+	if err != nil {
+		t.Errorf("Received error when parsing the stack: %s", err)
+	}
+	if st == nil {
+		t.Errorf("Received nil Stack object when parsing the stack: %v", st)
+	}
+
+
 }

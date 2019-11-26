@@ -637,6 +637,9 @@ func parseStack(b []byte) (*Stack, error) {
 	stack := make(Stack, stackLen)
 	for i, curLine := range relLines {
 		cur := i / 2
+		if cur >= len(stack) {
+			break
+		}
 		if len(curLine) == 0 {
 			continue
 		}
@@ -644,27 +647,21 @@ func parseStack(b []byte) (*Stack, error) {
 		if i%2 == 0 {
 			// function line
 			curStack.Callee = string(curLine)
-			//elems := bytes.Split(curLine, []byte("("))
-			//curStack.Callee.Name = string(elems[0])
-			//argsLine := bytes.Trim(elems[1], ")")
-			//args := bytes.Split(argsLine, []byte(","))
-			//curStack.Callee.ArgPtrs = make([]int64, len(args))
-			//for j, arg := range args {
-			//	curStack.Callee.ArgPtrs[j], _ = strconv.ParseInt(string(bytes.Trim(arg, " ")), 16, 64)
-			//}
 		} else {
 			// file line
 			curLine = bytes.Trim(curLine, "\t")
 			elems := bytes.Split(curLine, []byte(":"))
 			curStack.File = string(elems[0])
 
-			elems1 := bytes.Split(elems[1], []byte(" "))
-			cnt := len(elems1)
-			if cnt > 0 {
-				curStack.Line, _ = strconv.ParseInt(string(elems1[0]), 10, 64)
-			}
-			if cnt > 1 {
-				curStack.Addr, _ = strconv.ParseInt(string(elems1[1]), 16, 64)
+			if len(elems) > 1 {
+				elems1 := bytes.Split(elems[1], []byte(" "))
+				cnt := len(elems1)
+				if cnt > 0 {
+					curStack.Line, _ = strconv.ParseInt(string(elems1[0]), 10, 64)
+				}
+				if cnt > 1 {
+					curStack.Addr, _ = strconv.ParseInt(string(elems1[1]), 16, 64)
+				}
 			}
 		}
 		stack[cur] = curStack

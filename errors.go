@@ -3,6 +3,7 @@ package errors
 import (
 	"bytes"
 	"fmt"
+	"go/build"
 	"os"
 	"path"
 	"runtime"
@@ -89,6 +90,9 @@ func wrap(e error, s string, args ...interface{}) Err {
 		skip := 2
 		_, err.f, err.l, _ = runtime.Caller(skip)
 		sStack := debug.Stack()
+		if goPath == "" {
+			goPath = build.Default.GOPATH
+		}
 		if path.IsAbs(goPath) {
 			sStack = bytes.Replace(sStack, []byte(goPath), []byte(goPathVal), -1)
 		}

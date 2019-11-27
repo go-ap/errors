@@ -1332,7 +1332,10 @@ created by net/http.(*Server).Serve
 	if err != nil {
 		t.Errorf("Received error when setting emtpty GOPATH: %s", err)
 	}
-	
+	if p := os.Getenv("GOPATH"); p != "" {
+		t.Errorf("GOPATH is not empty loaded: %s", p)
+	}
+
 	st, err = parseStack(b)
 	if err != nil {
 		t.Errorf("Received error when parsing the stack: %s", err)

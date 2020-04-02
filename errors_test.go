@@ -35,6 +35,8 @@ func TestAnnotatef(t *testing.T) {
 	}
 }
 
+var homeVal = "$HOME"
+
 func TestNewf(t *testing.T) {
 	testStr := "Newf string"
 	te := Newf(testStr)

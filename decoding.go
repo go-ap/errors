@@ -5,7 +5,7 @@ import (
 )
 
 func UnmarshalJSON(data []byte) ([]Err, error) {
-	_, typ, _, err := jsonparser.Get(data)
+	_, typ, _, err := jsonparser.Get(data, "errors")
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func UnmarshalJSON(data []byte) ([]Err, error) {
 	l int
 	f string
 }
- */
+*/
 func (e *Err) UnmarshalJSON(data []byte) error {
 	if m, err := jsonparser.GetString(data, "m"); err == nil {
 		e.m = m

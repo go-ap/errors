@@ -2,12 +2,18 @@ package errors
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/go-ap/jsonld"
 	"net/http"
 	"strconv"
 )
+
+type Error interface {
+	error
+	json.Unmarshaler
+}
 
 type notFound struct {
 	Err
@@ -56,6 +62,7 @@ func wrapErr(err error, s string, args ...interface{}) Err {
 	errors.As(e, &asErr)
 	return asErr
 }
+
 func WrapWithStatus(status int, err error, s string, args ...interface{}) error {
 	switch status {
 	case http.StatusBadRequest:
@@ -429,6 +436,7 @@ func (f *forbidden) As(err interface{}) bool {
 	}
 	return true
 }
+
 // As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
 //  if the underlying logic of the receiver's type can understand it.
 // In this case we're converting a badGateway to its underlying type Err.
@@ -602,6 +610,58 @@ func httpErrorResponse(e error) int {
 	}
 
 	return http.StatusInternalServerError
+}
+
+func errorFromStatus(status int) Error {
+	switch status {
+	case http.StatusBadRequest:
+		return new(badRequest)
+	case http.StatusUnauthorized:
+		return new(unauthorized)
+	// case http.StatusPaymentRequired:
+	case http.StatusForbidden:
+		return new(forbidden)
+	case http.StatusNotFound:
+		return new(notFound)
+	case http.StatusMethodNotAllowed:
+		return new(methodNotAllowed)
+	case http.StatusNotAcceptable:
+		return new(notValid)
+	// case http.StatusProxyAuthRequired:
+	//  case http.StatusRequestTimeout:
+	//  case shttp.StatusConflict: // TODO(marius):
+	//  case http.StatusGone: // TODO(marius):
+	//  case http.StatusLengthRequres:
+	//  case http.StatusPreconditionFailed:
+	//  case http.StatusRequestEntityTooLarge:
+	//  case http.StatusRequestURITooLong:
+	//  case http.StatusUnsupportedMediaType: // TODO(marius):
+	//  case http.StatusRequestedRangeNotSatisfiable:
+	//  case http.StatusExpectationFailed:
+	//  case http.StatusTeapot:
+	//  case http.StatusMisdirectedRequest:
+	//  case http.StatusUnprocessableEntity:
+	//  case http.StatusLocked:
+	//  case http.StatusFailedDependency:
+	//  case http.StatusTooEarly:
+	//  case http.StatusTooManyRequests:
+	//  case http.StatusRequestHeaderFieldsTooLarge:
+	//  case http.StatusUnavailableForLegalReason:
+	//  case http.StatusInternalServerError:
+	case http.StatusNotImplemented:
+		return new(notImplemented)
+	case http.StatusBadGateway:
+		return new(badGateway)
+	// case http.StatusServiceUnavailable:
+	case http.StatusHTTPVersionNotSupported:
+		return new(notSupported)
+	case http.StatusGatewayTimeout:
+		return new(badGateway)
+	case http.StatusInternalServerError:
+		fallthrough
+	default:
+		return new(Err)
+	}
 }
 
 // StackFunc is a function call in the backtrace

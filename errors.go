@@ -3,6 +3,7 @@ package errors
 import (
 	"fmt"
 	"runtime"
+	"strings"
 )
 
 // IncludeBacktrace is a static variable that decides if when creating an error we store the backtrace with it.
@@ -19,7 +20,14 @@ type Err struct {
 
 // Error implements the error interface
 func (e Err) Error() string {
-	return e.m
+	if e.c == nil {
+		return e.m
+	}
+	s := strings.Builder{}
+	s.WriteString(e.m)
+	s.WriteString(": ")
+	s.WriteString(e.c.Error())
+	return s.String()
 }
 
 // Unwrap implements the errors.Wrapper interface

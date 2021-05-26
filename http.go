@@ -198,12 +198,12 @@ func NewBadGateway(e error, s string, args ...interface{}) *badGateway {
 func IsBadRequest(e error) bool {
 	_, okp := e.(*badRequest)
 	_, oks := e.(badRequest)
-	return okp || oks
+	return okp || oks || errors.As(e, &badRequest{})
 }
 func IsForbidden(e error) bool {
 	_, okp := e.(*forbidden)
 	_, oks := e.(forbidden)
-	return okp || oks
+	return okp || oks || errors.As(e, &forbidden{})
 }
 func IsNotSupported(e error) bool {
 	_, okp := e.(*notSupported)
@@ -213,48 +213,48 @@ func IsNotSupported(e error) bool {
 func IsConflict(e error) bool {
 	_, okp := e.(*conflict)
 	_, oks := e.(conflict)
-	return okp || oks
+	return okp || oks || errors.As(e, &conflict{})
 }
 func IsGone(e error) bool {
 	_, okp := e.(*gone)
 	_, oks := e.(gone)
-	return okp || oks
+	return okp || oks || errors.As(e, &gone{})
 }
 func IsMethodNotAllowed(e error) bool {
 	_, okp := e.(*methodNotAllowed)
 	_, oks := e.(methodNotAllowed)
-	return okp || oks
+	return okp || oks || errors.As(e, &methodNotAllowed{})
 }
 func IsNotFound(e error) bool {
 	_, okp := e.(*notFound)
 	_, oks := e.(notFound)
-	return okp || oks
+	return okp || oks || errors.As(e, &notFound{})
 }
 func IsNotImplemented(e error) bool {
 	_, okp := e.(*notImplemented)
 	_, oks := e.(notImplemented)
-	return okp || oks
+	return okp || oks || errors.As(e, &notImplemented{})
 }
 func IsUnauthorized(e error) bool {
 	_, okp := e.(*unauthorized)
 	_, oks := e.(unauthorized)
-	return okp || oks
+	return okp || oks || errors.As(e, &unauthorized{})
 }
 func IsTimeout(e error) bool {
 	_, okp := e.(*timeout)
 	_, oks := e.(timeout)
-	return okp || oks
+	return okp || oks || errors.As(e, &timeout{})
 }
 func IsNotValid(e error) bool {
 	_, okp := e.(*notValid)
 	_, oks := e.(notValid)
-	return okp || oks
+	return okp || oks || errors.As(e, &notValid{})
 }
 
 func IsBadGateway(e error) bool {
 	_, okp := e.(*badGateway)
 	_, oks := e.(badGateway)
-	return okp || oks
+	return okp || oks || errors.As(e, &badGateway{})
 }
 func (n notFound) Is(e error) bool {
 	return IsNotFound(e)
@@ -286,6 +286,12 @@ func (f forbidden) Is(e error) bool {
 func (b badGateway) Is(e error) bool {
 	return IsBadGateway(e)
 }
+func (g gone) Is(e error) bool {
+	return IsGone(e)
+}
+func (c conflict) Is(e error) bool {
+	return IsConflict(e)
+}
 func (n notFound) Unwrap() error {
 	return n.Err.Unwrap()
 }
@@ -315,6 +321,12 @@ func (f forbidden) Unwrap() error {
 }
 func (b badGateway) Unwrap() error {
 	return b.Err.Unwrap()
+}
+func (g gone) Unwrap() error {
+	return g.Err.Unwrap()
+}
+func (c conflict) Unwrap() error {
+	return c.Err.Unwrap()
 }
 
 // As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
@@ -481,6 +493,40 @@ func (b *badGateway) As(err interface{}) bool {
 		*x = *b
 	case *Err:
 		return b.Err.As(x)
+	default:
+		return false
+	}
+	return true
+}
+
+// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
+//  if the underlying logic of the receiver's type can understand it.
+// In this case we're converting a gone error to its underlying type Err.
+func (g *gone) As(err interface{}) bool {
+	switch x := err.(type) {
+	case **gone:
+		*x = g
+	case *gone:
+		*x = *g
+	case *Err:
+		return g.Err.As(x)
+	default:
+		return false
+	}
+	return true
+}
+
+// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
+//  if the underlying logic of the receiver's type can understand it.
+// In this case we're converting a conflict error to its underlying type Err.
+func (c *conflict) As(err interface{}) bool {
+	switch x := err.(type) {
+	case **conflict:
+		*x = c
+	case *conflict:
+		*x = *c
+	case *Err:
+		return c.Err.As(x)
 	default:
 		return false
 	}

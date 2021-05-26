@@ -35,6 +35,10 @@ type notImplemented struct {
 	Err
 }
 
+type conflict struct {
+	Err
+}
+
 type badRequest struct {
 	Err
 }
@@ -81,6 +85,8 @@ func WrapWithStatus(status int, err error, s string, args ...interface{}) error 
 	// case http.StatusProxyAuthRequired
 	// case http.StatusRequestTimeout
 	//  TODO(marius): http.StatusConflict
+	case http.StatusConflict:
+		return NewConflict(err, s, args...)
 	//  TODO(marius): http.StatusGone
 	// case http.StatusLengthRequres
 	// case http.StatusPreconditionFailed
@@ -129,6 +135,12 @@ func NotValidf(s string, args ...interface{}) *notValid {
 }
 func NewNotValid(e error, s string, args ...interface{}) *notValid {
 	return &notValid{wrapErr(e, s, args...)}
+}
+func Conflictf(s string, args ...interface{}) *conflict {
+	return &conflict{wrapErr(nil, s, args...)}
+}
+func NewConflict(e error, s string, args ...interface{}) *conflict {
+	return &conflict{wrapErr(e, s, args...)}
 }
 func Forbiddenf(s string, args ...interface{}) *forbidden {
 	return &forbidden{wrapErr(nil, s, args...)}
@@ -185,6 +197,11 @@ func IsForbidden(e error) bool {
 func IsNotSupported(e error) bool {
 	_, okp := e.(*notSupported)
 	_, oks := e.(notSupported)
+	return okp || oks
+}
+func IsConflict(e error) bool {
+	_, okp := e.(*conflict)
+	_, oks := e.(conflict)
 	return okp || oks
 }
 func IsMethodNotAllowed(e error) bool {

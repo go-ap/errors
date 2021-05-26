@@ -39,6 +39,10 @@ type conflict struct {
 	Err
 }
 
+type gone struct {
+	Err
+}
+
 type badRequest struct {
 	Err
 }
@@ -87,7 +91,8 @@ func WrapWithStatus(status int, err error, s string, args ...interface{}) error 
 	//  TODO(marius): http.StatusConflict
 	case http.StatusConflict:
 		return NewConflict(err, s, args...)
-	//  TODO(marius): http.StatusGone
+	case http.StatusGone:
+		return NewGone(err, s, args...)
 	// case http.StatusLengthRequres
 	// case http.StatusPreconditionFailed
 	// case http.StatusRequestEntityTooLarge
@@ -141,6 +146,12 @@ func Conflictf(s string, args ...interface{}) *conflict {
 }
 func NewConflict(e error, s string, args ...interface{}) *conflict {
 	return &conflict{wrapErr(e, s, args...)}
+}
+func Gonef(s string, args ...interface{}) *gone {
+	return &gone{wrapErr(nil, s, args...)}
+}
+func NewGone(e error, s string, args ...interface{}) *gone {
+	return &gone{wrapErr(e, s, args...)}
 }
 func Forbiddenf(s string, args ...interface{}) *forbidden {
 	return &forbidden{wrapErr(nil, s, args...)}
@@ -202,6 +213,11 @@ func IsNotSupported(e error) bool {
 func IsConflict(e error) bool {
 	_, okp := e.(*conflict)
 	_, oks := e.(conflict)
+	return okp || oks
+}
+func IsGone(e error) bool {
+	_, okp := e.(*gone)
+	_, oks := e.(gone)
 	return okp || oks
 }
 func IsMethodNotAllowed(e error) bool {
@@ -590,7 +606,12 @@ func httpErrorResponse(e error) int {
 	}
 	//  http.StatusProxyAuthRequired
 	//  http.StatusRequestTimeout
-	//  TODO(marius): http.StatusConflict
+	if IsConflict(e) {
+		return http.StatusConflict
+	}
+	if IsGone(e) {
+		return http.StatusGone
+	}
 	//  TODO(marius): http.StatusGone
 	//  http.StatusLengthRequres
 	//  http.StatusPreconditionFailed

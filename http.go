@@ -579,7 +579,7 @@ type Http struct {
 	Location string `jsonld:"location,omitempty"`
 }
 
-func HttpErrors(err error) (int, []Http) {
+func HttpErrors(err error) []Http {
 	https := make([]Http, 0)
 
 	load := func(err error) Http {
@@ -614,10 +614,9 @@ func HttpErrors(err error) (int, []Http) {
 			Message:  msg,
 			Trace:    trace,
 			Location: loc,
-			Code:     httpErrorResponse(err),
+			Code:     HttpStatus(err),
 		}
 	}
-	code := httpErrorResponse(err)
 	https = append(https, load(err))
 	for {
 		if err = errors.Unwrap(err); err != nil {
@@ -627,10 +626,10 @@ func HttpErrors(err error) (int, []Http) {
 		}
 	}
 
-	return code, https
+	return https
 }
 
-func httpErrorResponse(e error) int {
+func HttpStatus(e error) int {
 	if IsBadRequest(e) {
 		return http.StatusBadRequest
 	}
@@ -832,9 +831,9 @@ func RenderErrors(r *http.Request, errs ...error) (int, []byte) {
 	errMap := make([]Http, 0)
 	var status int
 	for _, err := range errs {
-		code, more := HttpErrors(err)
+		more := HttpErrors(err)
 		errMap = append(errMap, more...)
-		status = code
+		status = HttpStatus(err)
 	}
 	var dat []byte
 	var err error

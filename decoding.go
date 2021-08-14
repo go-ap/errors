@@ -1,56 +1,56 @@
 package errors
 
 import (
-	"github.com/buger/jsonparser"
 	"strconv"
 	"strings"
+
+	"github.com/valyala/fastjson"
 )
 
 func UnmarshalJSON(data []byte) ([]Error, error) {
 	if len(data) == 0 {
 		return nil, nil
 	}
-	val, typ, _, err := jsonparser.Get(data, "errors")
+	p := fastjson.Parser{}
+	val, err := p.ParseBytes(data)
 	if err != nil {
 		return nil, err
 	}
+
+	v := val.Get("errors")
+	if v == nil {
+		return nil, wrap(nil, "invalid errors array")
+	}
 	items := make([]Error, 0)
-	switch typ {
-	case jsonparser.Array:
-		var err error
-		jsonparser.ArrayEach(val, func(value []byte, dataType jsonparser.ValueType, offset int, err error) {
-			status, err := jsonparser.GetInt(value, "status")
-			if err == nil {
-				localErr := errorFromStatus(int(status))
-				if err := localErr.UnmarshalJSON(value); err == nil {
-					items = append(items, localErr)
-				}
-			}
-		})
-		return items, err
-	case jsonparser.Object:
-		if status, err := jsonparser.GetInt(data, "status"); err == nil {
-			localErr := errorFromStatus(int(status))
-			if err := localErr.UnmarshalJSON(data); err == nil {
+	switch v.Type() {
+	case fastjson.TypeArray:
+		for _, v := range v.GetArray() {
+			status := v.GetInt("status")
+			localErr := errorFromStatus(status)
+			if err := localErr.UnmarshalJSON([]byte(v.String())); err == nil {
 				items = append(items, localErr)
 			}
 		}
-	case jsonparser.String:
+		return items, err
+	case fastjson.TypeObject:
+		status := v.GetInt("status")
+		localErr := errorFromStatus(status)
+		if err := localErr.UnmarshalJSON(data); err == nil {
+			items = append(items, localErr)
+		}
+	case fastjson.TypeString:
 		it := new(Err)
 		it.m = string(data)
 		items = append(items, it)
-	}
-	if err != nil {
-		return nil, err
 	}
 	return items, nil
 }
 
 func (e *Err) UnmarshalJSON(data []byte) error {
-	if m, err := jsonparser.GetString(data, "message"); err == nil {
+	if m := fastjson.GetString(data, "message"); len(m) > 0 {
 		e.m = m
 	}
-	if val, err := jsonparser.GetString(data, "location"); err == nil {
+	if val := fastjson.GetString(data, "location"); len(val) > 0 {
 		pieces := strings.Split(val, ":")
 		if len(pieces) > 0 {
 			e.f = pieces[0]

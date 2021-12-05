@@ -3,6 +3,7 @@ package errors
 import (
 	"fmt"
 	"runtime"
+	"runtime/debug"
 	"strings"
 )
 
@@ -84,7 +85,7 @@ func wrap(e error, s string, args ...interface{}) Err {
 	if IncludeBacktrace {
 		skip := 2
 		_, err.f, err.l, _ = runtime.Caller(skip)
-		err.t = stack()
+		err.t = debug.Stack()
 	}
 	return err
 }

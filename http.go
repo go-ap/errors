@@ -770,12 +770,12 @@ type StackElement struct {
 type Stack []StackElement
 
 func parseCalleeLine(s string) string {
-	return s
+	return strings.TrimSpace(s)
 }
 
 func parseFileLine(s string) (file string, line, addr int64) {
 	elems := strings.Split(s, ":")
-	file = elems[0]
+	file = strings.TrimSpace(elems[0])
 
 	if len(elems) > 1 {
 		elems1 := strings.Split(elems[1], " ")
@@ -784,7 +784,7 @@ func parseFileLine(s string) (file string, line, addr int64) {
 			line, _ = strconv.ParseInt(elems1[0], 10, 64)
 		}
 		if cnt > 1 {
-			addr, _ = strconv.ParseInt(elems1[1], 16, 64)
+			addr, _ = strconv.ParseInt(elems1[1], 0, 64)
 		}
 	}
 	return file, line, addr

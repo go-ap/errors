@@ -5,10 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-ap/jsonld"
 	"net/http"
 	"strconv"
+	"strings"
+
+	"github.com/go-ap/jsonld"
 )
+
+const packageName = "github.com/go-ap/errors"
 
 type Error interface {
 	error
@@ -575,7 +579,7 @@ func HandleError(e error) ErrorHandlerFn {
 type Http struct {
 	Code     int    `jsonld:"status"`
 	Message  string `jsonld:"message"`
-	Trace    *Stack `jsonld:"trace,omitempty"`
+	Trace    Stack  `jsonld:"trace,omitempty"`
 	Location string `jsonld:"location,omitempty"`
 }
 
@@ -584,7 +588,7 @@ func HttpErrors(err error) []Http {
 
 	load := func(err error) Http {
 		var loc string
-		var trace *Stack
+		var trace Stack
 		var msg string
 		switch e := err.(type) {
 		case *Err:
@@ -765,51 +769,47 @@ type StackElement struct {
 // Relevant in this ctxt means, it strips the calls that are happening in the package
 type Stack []StackElement
 
-func parseStack(b []byte) (*Stack, error) {
-	lvl := 2 // go up the stack call tree to hide the two internal calls
-	lines := bytes.Split(b, []byte("\n"))
+func parseCalleeLine(s string) string {
+	return s
+}
 
-	if len(lines) <= lvl*2+1 {
-		return nil, Newf("invalid stack trace")
-	}
+func parseFileLine(s string) (file string, line, addr int64) {
+	elems := strings.Split(s, ":")
+	file = elems[0]
 
-	skipLines := lvl * 2
-	stackLen := (len(lines) - 1 - skipLines) / 2
-	relLines := lines[1+skipLines:]
-
-	stack := make(Stack, stackLen)
-	for i, curLine := range relLines {
-		cur := i / 2
-		if cur >= len(stack) {
-			break
+	if len(elems) > 1 {
+		elems1 := strings.Split(elems[1], " ")
+		cnt := len(elems1)
+		if cnt > 0 {
+			line, _ = strconv.ParseInt(elems1[0], 10, 64)
 		}
-		if len(curLine) == 0 {
+		if cnt > 1 {
+			addr, _ = strconv.ParseInt(elems1[1], 16, 64)
+		}
+	}
+	return file, line, addr
+}
+
+func parseStack(b []byte) (Stack, error) {
+	stack := make(Stack, 0)
+	// Skipping first line of form: "goroutine X:"
+	lines := bytes.Split(b, []byte("\n"))[1:]
+	for i := 0; i < len(lines); i += 2 {
+		curLine := string(lines[i])
+		nextLine := string(lines[i+1])
+		if strings.Contains(curLine, packageName) || strings.Contains(nextLine, packageName) {
 			continue
 		}
-		curStack := stack[cur]
-		if i%2 == 0 {
-			// function line
-			curStack.Callee = string(curLine)
-		} else {
-			// file line
-			curLine = bytes.Trim(curLine, "\t")
-			elems := bytes.Split(curLine, []byte(":"))
-			curStack.File = string(elems[0])
-
-			if len(elems) > 1 {
-				elems1 := bytes.Split(elems[1], []byte(" "))
-				cnt := len(elems1)
-				if cnt > 0 {
-					curStack.Line, _ = strconv.ParseInt(string(elems1[0]), 10, 64)
-				}
-				if cnt > 1 {
-					curStack.Addr, _ = strconv.ParseInt(string(elems1[1]), 16, 64)
-				}
-			}
+		curStack := StackElement{
+			Callee: parseCalleeLine(curLine),
 		}
-		stack[cur] = curStack
+		curStack.File, curStack.Line, curStack.Addr = parseFileLine(nextLine)
+		if curStack.Callee == "" || curStack.File == "" {
+			continue
+		}
+		stack = append(stack, curStack)
 	}
-	return &stack, nil
+	return stack, nil
 }
 
 // TODO(marius): get a proper ctxt

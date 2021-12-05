@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -222,7 +223,7 @@ func TestIsBadRequest(t *testing.T) {
 }
 
 func TestBadRequest_As(t *testing.T) {
-	e := badRequest{ Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
+	e := badRequest{Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -330,7 +331,7 @@ func TestIsForbidden(t *testing.T) {
 }
 
 func TestForbidden_As(t *testing.T) {
-	e := forbidden{ Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
+	e := forbidden{Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -438,7 +439,7 @@ func TestIsMethodNotAllowed(t *testing.T) {
 }
 
 func TestMethodNotAllowed_As(t *testing.T) {
-	e := methodNotAllowed{ Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
+	e := methodNotAllowed{Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -546,7 +547,7 @@ func TestIsNotFound(t *testing.T) {
 }
 
 func TestNotFound_As(t *testing.T) {
-	e := notFound{ Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
+	e := notFound{Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -654,7 +655,7 @@ func TestIsNotImplemented(t *testing.T) {
 }
 
 func TestNotImplemented_As(t *testing.T) {
-	e := notImplemented{ Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
+	e := notImplemented{Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -762,7 +763,7 @@ func TestIsNotSupported(t *testing.T) {
 }
 
 func TestNotSupported_As(t *testing.T) {
-	e := notSupported{ Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
+	e := notSupported{Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -870,7 +871,7 @@ func TestIsNotValid(t *testing.T) {
 }
 
 func TestNotValid_As(t *testing.T) {
-	e := notValid{ Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
+	e := notValid{Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -978,7 +979,7 @@ func TestIsTimeout(t *testing.T) {
 }
 
 func TestTimeout_As(t *testing.T) {
-	e := timeout{ Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
+	e := timeout{Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -1086,7 +1087,7 @@ func TestIsUnauthorized(t *testing.T) {
 }
 
 func TestUnauthorized_As(t *testing.T) {
-	e := unauthorized{ Err: Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
+	e := unauthorized{Err: Err{m: "test", l: 11, f: "random", t: []byte{0x6, 0x6, 0x6}, c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -1191,7 +1192,7 @@ func TestChallenge(t *testing.T) {
 	var errI error
 	msgChallenge := "test challenge"
 	e := unauthorized{
-		Err: Err{c: fmt.Errorf("ttt")},
+		Err:       Err{c: fmt.Errorf("ttt")},
 		challenge: msgChallenge,
 	}
 	errI = &e
@@ -1342,5 +1343,13 @@ created by net/http.(*Server).Serve
 	}
 	if st == nil {
 		t.Errorf("Received nil Stack object when parsing the stack: %v", st)
+	}
+	for i, se := range st {
+		if strings.Contains(se.Callee, packageName) {
+			t.Errorf("Stack element callee at pos %d contains error namespace %q", i, se.Callee)
+		}
+		if strings.Contains(se.File, packageName) {
+			t.Errorf("Stack element file name at pos %d contains error namespace %q", i, se.File)
+		}
 	}
 }

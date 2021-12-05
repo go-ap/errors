@@ -1344,6 +1344,9 @@ created by net/http.(*Server).Serve
 	if st == nil {
 		t.Errorf("Received nil Stack object when parsing the stack: %v", st)
 	}
+	if len(st) != 42 { // 42 is the number of stack elements not containing the errors package
+		t.Errorf("Stack length is incorrect %d, expected %d %q", len(st), 42, st)
+	}
 	for i, se := range st {
 		if strings.Contains(se.Callee, packageName) {
 			t.Errorf("Stack element callee at pos %d contains error namespace %q", i, se.Callee)

@@ -794,7 +794,7 @@ func parseStack(b []byte) (Stack, error) {
 	stack := make(Stack, 0)
 	// Skipping first line of form: "goroutine X:"
 	lines := bytes.Split(b, []byte("\n"))[1:]
-	for i := 0; i < len(lines); i += 2 {
+	for i := 0; i < len(lines)-1; i += 2 {
 		curLine := string(lines[i])
 		nextLine := string(lines[i+1])
 		if strings.Contains(curLine, packageName) || strings.Contains(nextLine, packageName) {

@@ -12,7 +12,8 @@ import (
 	"github.com/go-ap/jsonld"
 )
 
-const packageName = "github.com/go-ap/errors"
+const errorsPackageName = "github.com/go-ap/errors"
+const runtimeDebugPackageName = "runtime/debug"
 
 type Error interface {
 	error
@@ -797,7 +798,10 @@ func parseStack(b []byte) (Stack, error) {
 	for i := 0; i < len(lines)-1; i += 2 {
 		curLine := string(lines[i])
 		nextLine := string(lines[i+1])
-		if strings.Contains(curLine, packageName) || strings.Contains(nextLine, packageName) {
+		if strings.Contains(curLine, errorsPackageName) || strings.Contains(nextLine, errorsPackageName) {
+			continue
+		}
+		if strings.Contains(curLine, runtimeDebugPackageName) || strings.Contains(nextLine, runtimeDebugPackageName) {
 			continue
 		}
 		curStack := StackElement{

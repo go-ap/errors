@@ -1344,15 +1344,23 @@ created by net/http.(*Server).Serve
 	if st == nil {
 		t.Errorf("Received nil Stack object when parsing the stack: %v", st)
 	}
-	if len(st) != 42 { // 42 is the number of stack elements not containing the errors package
-		t.Errorf("Stack length is incorrect %d, expected %d %q", len(st), 42, st)
+	// 41 is the number of stack elements not containing the errors package, or the runtime debug package
+	validLines := 41
+	if len(st) != validLines {
+		t.Errorf("Stack length is incorrect %d, expected %d %q", len(st), validLines, st)
 	}
 	for i, se := range st {
-		if strings.Contains(se.Callee, packageName) {
+		if strings.Contains(se.Callee, errorsPackageName) {
 			t.Errorf("Stack element callee at pos %d contains error namespace %q", i, se.Callee)
 		}
-		if strings.Contains(se.File, packageName) {
+		if strings.Contains(se.Callee, runtimeDebugPackageName) {
+			t.Errorf("Stack element callee at pos %d contains runtime debug namespace %q", i, se.Callee)
+		}
+		if strings.Contains(se.File, errorsPackageName) {
 			t.Errorf("Stack element file name at pos %d contains error namespace %q", i, se.File)
+		}
+		if strings.Contains(se.File, runtimeDebugPackageName) {
+			t.Errorf("Stack element file name at pos %d contains runtime debug namespace %q", i, se.File)
 		}
 	}
 }

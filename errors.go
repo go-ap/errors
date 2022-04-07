@@ -146,7 +146,7 @@ func wrap(e error, s string, args ...interface{}) Err {
 		// If our cause has set a stack trace, and that trace is a child of our own function
 		// as inferred by prefix matching our current program counter stack, then we only want
 		// to decorate the error message rather than add a redundant stack trace.
-		stack := callers(1)
+		stack := callers(2)
 		if !(As(e, causeStackTracer) && ancestorOfCause(*stack, (*causeStackTracer).StackTrace())) {
 			err.t = *stack
 		}

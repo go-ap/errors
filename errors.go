@@ -3,6 +3,7 @@ package errors
 import (
 	"errors"
 	"fmt"
+	"io"
 )
 
 // Export a number of functions or variables from package errors.
@@ -20,6 +21,29 @@ type Err struct {
 	m string
 	c error
 	t stack
+}
+
+func (e Err) Format(s fmt.State, verb rune) {
+	switch verb {
+	case 's':
+		io.WriteString(s, e.m)
+		switch {
+		case s.Flag('+'):
+			if e.c != nil {
+				io.WriteString(s, "\n\t")
+				io.WriteString(s, fmt.Sprintf("%+s", e.c))
+			}
+		}
+	case 'v':
+		e.Format(s, 's')
+		switch {
+		case s.Flag('+'):
+			if e.t != nil {
+				io.WriteString(s, ":")
+				e.t.Format(s, 'v')
+			}
+		}
+	}
 }
 
 // Error implements the error interface

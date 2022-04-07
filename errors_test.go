@@ -3,10 +3,40 @@ package errors
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 )
 
 var err = fmt.Errorf("test error")
+
+func TestFormat(t *testing.T) {
+	IncludeBacktrace = false
+	// %+s check for unwrapped error
+	e1 := Newf("test")
+	str := fmt.Sprintf("%+s", e1)
+	if str != e1.m {
+		t.Errorf("Error message invalid %s, expected %s", str, e1.m)
+	}
+
+	// %+s check for wrapped error
+	e2 := Annotatef(e1, "another")
+	str = fmt.Sprintf("%+s", e2)
+	val := e2.m + "\n\t" + e2.c.Error()
+	if str != val {
+		t.Errorf("Error message invalid %s, expected %s", str, val)
+	}
+
+	// %v check for unwrapped error with trace
+	IncludeBacktrace = true
+	e3 := Newf("test1")
+	str = fmt.Sprintf("%+v", e3)
+	if !strings.Contains(str, e3.m) {
+		t.Errorf("Error message %s\n should contain %s", str, e3.m)
+	}
+	if !strings.Contains(str, fmt.Sprintf("%+v", e3.t.StackTrace())) {
+		t.Errorf("Error message %s\n should contain %+v", str, e3.t.StackTrace())
+	}
+}
 
 func TestMarshalJSON(t *testing.T) {
 	IncludeBacktrace = true

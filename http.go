@@ -3,7 +3,6 @@ package errors
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -72,7 +71,7 @@ type badGateway struct {
 func wrapErr(err error, s string, args ...interface{}) Err {
 	e := Annotatef(err, s, args...)
 	asErr := Err{}
-	errors.As(e, &asErr)
+	As(e, &asErr)
 	return asErr
 }
 
@@ -203,12 +202,12 @@ func NewBadGateway(e error, s string, args ...interface{}) *badGateway {
 func IsBadRequest(e error) bool {
 	_, okp := e.(*badRequest)
 	_, oks := e.(badRequest)
-	return okp || oks || errors.As(e, &badRequest{})
+	return okp || oks || As(e, &badRequest{})
 }
 func IsForbidden(e error) bool {
 	_, okp := e.(*forbidden)
 	_, oks := e.(forbidden)
-	return okp || oks || errors.As(e, &forbidden{})
+	return okp || oks || As(e, &forbidden{})
 }
 func IsNotSupported(e error) bool {
 	_, okp := e.(*notSupported)
@@ -218,48 +217,48 @@ func IsNotSupported(e error) bool {
 func IsConflict(e error) bool {
 	_, okp := e.(*conflict)
 	_, oks := e.(conflict)
-	return okp || oks || errors.As(e, &conflict{})
+	return okp || oks || As(e, &conflict{})
 }
 func IsGone(e error) bool {
 	_, okp := e.(*gone)
 	_, oks := e.(gone)
-	return okp || oks || errors.As(e, &gone{})
+	return okp || oks || As(e, &gone{})
 }
 func IsMethodNotAllowed(e error) bool {
 	_, okp := e.(*methodNotAllowed)
 	_, oks := e.(methodNotAllowed)
-	return okp || oks || errors.As(e, &methodNotAllowed{})
+	return okp || oks || As(e, &methodNotAllowed{})
 }
 func IsNotFound(e error) bool {
 	_, okp := e.(*notFound)
 	_, oks := e.(notFound)
-	return okp || oks || errors.As(e, &notFound{})
+	return okp || oks || As(e, &notFound{})
 }
 func IsNotImplemented(e error) bool {
 	_, okp := e.(*notImplemented)
 	_, oks := e.(notImplemented)
-	return okp || oks || errors.As(e, &notImplemented{})
+	return okp || oks || As(e, &notImplemented{})
 }
 func IsUnauthorized(e error) bool {
 	_, okp := e.(*unauthorized)
 	_, oks := e.(unauthorized)
-	return okp || oks || errors.As(e, &unauthorized{})
+	return okp || oks || As(e, &unauthorized{})
 }
 func IsTimeout(e error) bool {
 	_, okp := e.(*timeout)
 	_, oks := e.(timeout)
-	return okp || oks || errors.As(e, &timeout{})
+	return okp || oks || As(e, &timeout{})
 }
 func IsNotValid(e error) bool {
 	_, okp := e.(*notValid)
 	_, oks := e.(notValid)
-	return okp || oks || errors.As(e, &notValid{})
+	return okp || oks || As(e, &notValid{})
 }
 
 func IsBadGateway(e error) bool {
 	_, okp := e.(*badGateway)
 	_, oks := e.(badGateway)
-	return okp || oks || errors.As(e, &badGateway{})
+	return okp || oks || As(e, &badGateway{})
 }
 func (n notFound) Is(e error) bool {
 	return IsNotFound(e)
@@ -547,7 +546,7 @@ func (u *unauthorized) Challenge(c string) *unauthorized {
 // Challenge returns the challenge of the err parameter if it's an unauthorized type error
 func Challenge(err error) string {
 	un := unauthorized{}
-	if ok := errors.As(err, &un); ok {
+	if ok := As(err, &un); ok {
 		return un.challenge
 	}
 	return ""
@@ -603,7 +602,7 @@ func HttpErrors(err error) []Http {
 			}
 		default:
 			local := new(Err)
-			if ok := errors.As(err, local); ok {
+			if ok := As(err, local); ok {
 				if IncludeBacktrace {
 					trace, _ = parseStack(local.StackTrace())
 					f, l := local.Location()
@@ -624,7 +623,7 @@ func HttpErrors(err error) []Http {
 	}
 	https = append(https, load(err))
 	for {
-		if err = errors.Unwrap(err); err != nil {
+		if err = Unwrap(err); err != nil {
 			https = append(https, load(err))
 		} else {
 			break

@@ -12,9 +12,18 @@ func TestMarshalJSON(t *testing.T) {
 	IncludeBacktrace = true
 	e := Newf("test")
 
-	b, _ := json.Marshal(e)
-
-	t.Logf("JSON: %s", b)
+	b, err := e.t.StackTrace().MarshalJSON()
+	if err != nil {
+		t.Errorf("MarshalJSON failed with error: %+s", err)
+	}
+	stack := make([]json.RawMessage, 0)
+	err = json.Unmarshal(b, &stack)
+	if err != nil {
+		t.Errorf("JSON message could not be unmarshaled: %+s", err)
+	}
+	if len(stack) != len(e.t) {
+		t.Errorf("Count of stack frames different after marshaling, expected %d got %d", len(e.t), len(stack))
+	}
 }
 
 func TestAnnotatef(t *testing.T) {

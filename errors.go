@@ -1,9 +1,8 @@
 package errors
 
 import (
+	"errors"
 	"fmt"
-	"runtime"
-	"runtime/debug"
 	"strings"
 )
 
@@ -21,9 +20,7 @@ var IncludeBacktrace = true
 type Err struct {
 	c error
 	m string
-	t []byte
-	l int
-	f string
+	t stack
 }
 
 // Error implements the error interface
@@ -33,7 +30,7 @@ func (e Err) Error() string {
 	}
 	s := strings.Builder{}
 	s.WriteString(e.m)
-	s.WriteString(": ")
+	s.WriteString("\n")
 	s.WriteString(e.c.Error())
 	return s.String()
 }
@@ -43,14 +40,9 @@ func (e Err) Unwrap() error {
 	return e.c
 }
 
-// Location returns the file and line number pair of the instantiation of the error
-func (e Err) Location() (string, int) {
-	return e.f, e.l
-}
-
 // StackTrace returns the stack trace as returned by the debug.Stack function
-func (e Err) StackTrace() []byte {
-	return e.t
+func (e Err) StackTrace() StackTrace {
+	return e.t.StackTrace()
 }
 
 // Annotatef wraps an error with new message
@@ -84,15 +76,64 @@ func (e *Err) As(err interface{}) bool {
 	return true
 }
 
+type StackTracer interface {
+	StackTrace() StackTrace
+}
+
+// ancestorOfCause returns true if the caller looks to be an ancestor of the given stack
+// trace. We check this by seeing whether our stack prefix-matches the cause stack, which
+// should imply the error was generated directly from our goroutine.
+func ancestorOfCause(ourStack stack, causeStack StackTrace) bool {
+	// Stack traces are ordered such that the deepest frame is first. We'll want to check
+	// for prefix matching in reverse.
+	//
+	// As an example, imagine we have a prefix-matching stack for ourselves:
+	// [
+	//   "github.com/go-ap/processing/processing.Validate",
+	//   "testing.tRunner",
+	//   "runtime.goexit"
+	// ]
+	//
+	// We'll want to compare this against an error cause that will have happened further
+	// down the stack. An example stack trace from such an error might be:
+	// [
+	//   "github.com/go-ap/errors/errors.New",
+	//   "testing.tRunner",
+	//   "runtime.goexit"
+	// ]
+	//
+	// Their prefix matches, but we'll have to handle the match carefully as we need to match
+	// from back to forward.
+
+	// We can't possibly prefix match if our stack is larger than the cause stack.
+	if len(ourStack) > len(causeStack) {
+		return false
+	}
+
+	// We know the sizes are compatible, so compare program counters from back to front.
+	for idx := 0; idx < len(ourStack); idx++ {
+		if ourStack[len(ourStack)-1] != (uintptr)(causeStack[len(causeStack)-1]) {
+			return false
+		}
+	}
+
+	return true
+}
+
 func wrap(e error, s string, args ...interface{}) Err {
 	err := Err{
 		c: e,
 		m: fmt.Sprintf(s, args...),
 	}
 	if IncludeBacktrace {
-		skip := 2
-		_, err.f, err.l, _ = runtime.Caller(skip)
-		err.t = debug.Stack()
+		causeStackTracer := new(StackTracer)
+		// If our cause has set a stack trace, and that trace is a child of our own function
+		// as inferred by prefix matching our current program counter stack, then we only want
+		// to decorate the error message rather than add a redundant stack trace.
+		stack := callers(1)
+		if !(As(e, causeStackTracer) && ancestorOfCause(*stack, (*causeStackTracer).StackTrace())) {
+			err.t = *stack
+		}
 	}
 	return err
 }

@@ -1,14 +1,10 @@
 package errors
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"strconv"
-	"strings"
-
 	"github.com/go-ap/jsonld"
+	"net/http"
 )
 
 const errorsPackageName = "github.com/go-ap/errors"
@@ -577,48 +573,37 @@ func HandleError(e error) ErrorHandlerFn {
 }
 
 type Http struct {
-	Code     int    `jsonld:"status"`
-	Message  string `jsonld:"message"`
-	Trace    Stack  `jsonld:"trace,omitempty"`
-	Location string `jsonld:"location,omitempty"`
+	Code    int        `jsonld:"status"`
+	Message string     `jsonld:"message"`
+	Trace   StackTrace `jsonld:"trace,omitempty"`
 }
 
 func HttpErrors(err error) []Http {
 	https := make([]Http, 0)
 
 	load := func(err error) Http {
-		var loc string
-		var trace Stack
+		var trace StackTrace
 		var msg string
 		switch e := err.(type) {
 		case *Err:
-			msg = fmt.Sprintf("%s", e.Error())
+			msg = e.Error()
 			if IncludeBacktrace {
-				trace, _ = parseStack(e.StackTrace())
-				f, l := e.Location()
-				if len(f) > 0 {
-					loc = fmt.Sprintf("%s:%d", f, l)
-				}
+				trace = e.StackTrace()
 			}
 		default:
 			local := new(Err)
 			if ok := As(err, local); ok {
 				if IncludeBacktrace {
-					trace, _ = parseStack(local.StackTrace())
-					f, l := local.Location()
-					if len(f) > 0 {
-						loc = fmt.Sprintf("%s:%d", f, l)
-					}
+					trace = local.StackTrace()
 				}
 			}
 			msg = err.Error()
 		}
 
 		return Http{
-			Message:  msg,
-			Trace:    trace,
-			Location: loc,
-			Code:     HttpStatus(err),
+			Message: msg,
+			Trace:   trace,
+			Code:    HttpStatus(err),
 		}
 	}
 	https = append(https, load(err))
@@ -749,70 +734,6 @@ func errorFromStatus(status int) Error {
 	default:
 		return new(Err)
 	}
-}
-
-// StackFunc is a function call in the backtrace
-type StackFunc struct {
-	Name    string  `jsonld:"name"`
-	ArgPtrs []int64 `jsonld:"name,omitempty"`
-}
-
-// StackElement represents a stack call including file, line, and function call
-type StackElement struct {
-	File   string `jsonld:"file"`
-	Line   int64  `jsonld:"line"`
-	Callee string `jsonld:"calee,omitempty"`
-	Addr   int64  `jsonld:"address,omitempty"`
-}
-
-// Stack is an array of stack elements representing the parsed relevant bits of a backtrace
-// Relevant in this ctxt means, it strips the calls that are happening in the package
-type Stack []StackElement
-
-func parseCalleeLine(s string) string {
-	return strings.TrimSpace(s)
-}
-
-func parseFileLine(s string) (file string, line, addr int64) {
-	elems := strings.Split(s, ":")
-	file = strings.TrimSpace(elems[0])
-
-	if len(elems) > 1 {
-		elems1 := strings.Split(elems[1], " ")
-		cnt := len(elems1)
-		if cnt > 0 {
-			line, _ = strconv.ParseInt(elems1[0], 10, 64)
-		}
-		if cnt > 1 {
-			addr, _ = strconv.ParseInt(elems1[1], 0, 64)
-		}
-	}
-	return file, line, addr
-}
-
-func parseStack(b []byte) (Stack, error) {
-	stack := make(Stack, 0)
-	// Skipping first line of form: "goroutine X:"
-	lines := bytes.Split(b, []byte("\n"))[1:]
-	for i := 0; i < len(lines)-1; i += 2 {
-		curLine := string(lines[i])
-		nextLine := string(lines[i+1])
-		if strings.Contains(curLine, errorsPackageName) || strings.Contains(nextLine, errorsPackageName) {
-			continue
-		}
-		if strings.Contains(curLine, runtimeDebugPackageName) || strings.Contains(nextLine, runtimeDebugPackageName) {
-			continue
-		}
-		curStack := StackElement{
-			Callee: parseCalleeLine(curLine),
-		}
-		curStack.File, curStack.Line, curStack.Addr = parseFileLine(nextLine)
-		if curStack.Callee == "" || curStack.File == "" {
-			continue
-		}
-		stack = append(stack, curStack)
-	}
-	return stack, nil
 }
 
 // TODO(marius): get a proper ctxt

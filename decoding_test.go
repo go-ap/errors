@@ -1,7 +1,7 @@
 package errors
 
 import (
-	"bytes"
+	"reflect"
 	"testing"
 )
 
@@ -37,8 +37,6 @@ func Test_UnmarshalJSON(t *testing.T) {
 				&forbidden{
 					Err: Err{
 						m: "Error processing OAuth2 request: The request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once, or is otherwise malformed.",
-						f: "/home/habarnam/workspace/go-ap/errors/http.go",
-						l: 54,
 					},
 				},
 				&Err{
@@ -95,13 +93,7 @@ func assertEqual(t *testing.T, g Err, w Err) {
 	if w.c != g.c {
 		t.Errorf("UnmarshalJSON() Err.c got = %s, want %s", g.c, w.c)
 	}
-	if !bytes.Equal(w.t, g.t) {
-		t.Errorf("UnmarshalJSON() Err.t got = %s, want %s", g.t, w.t)
-	}
-	if w.f != g.f {
-		t.Errorf("UnmarshalJSON() Err.f got = %s, want %s", g.f, w.f)
-	}
-	if w.l != g.l {
-		t.Errorf("UnmarshalJSON() Err.l got = %d, want %d", g.l, w.l)
+	if !reflect.DeepEqual(w.t.StackTrace(), g.t.StackTrace()) {
+		t.Errorf("UnmarshalJSON() Err.t got = %v, want %v", g.t, w.t)
 	}
 }

@@ -1,9 +1,6 @@
 package errors
 
 import (
-	"strconv"
-	"strings"
-
 	"github.com/valyala/fastjson"
 )
 
@@ -50,17 +47,6 @@ func (e *Err) UnmarshalJSON(data []byte) error {
 	if m := fastjson.GetString(data, "message"); len(m) > 0 {
 		e.m = m
 	}
-	if val := fastjson.GetString(data, "location"); len(val) > 0 {
-		pieces := strings.Split(val, ":")
-		if len(pieces) > 0 {
-			e.f = pieces[0]
-			if len(pieces) > 1 {
-				l, _ := strconv.ParseInt(pieces[1], 10, 32)
-				e.l = int(l)
-			}
-		}
-	}
-
 	return nil
 }
 

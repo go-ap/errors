@@ -574,7 +574,7 @@ func HandleError(e error) ErrorHandlerFn {
 }
 
 type Http struct {
-	Code    int        `jsonld:"status"`
+	Code    int        `jsonld:"status,omitempty"`
 	Message string     `jsonld:"message"`
 	Trace   StackTrace `jsonld:"trace,omitempty"`
 }
@@ -682,7 +682,7 @@ func HttpStatus(e error) int {
 		return http.StatusGatewayTimeout
 	}
 
-	return http.StatusInternalServerError
+	return 0
 }
 
 func errorFromStatus(status int) Error {

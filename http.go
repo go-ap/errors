@@ -3,8 +3,9 @@ package errors
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-ap/jsonld"
 	"net/http"
+
+	"github.com/go-ap/jsonld"
 )
 
 const errorsPackageName = "github.com/go-ap/errors"

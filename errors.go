@@ -3,7 +3,6 @@ package errors
 import (
 	"errors"
 	"fmt"
-	"strings"
 )
 
 // Export a number of functions or variables from package errors.
@@ -18,21 +17,14 @@ var IncludeBacktrace = true
 
 // Err is our custom error type that can store backtrace, file and line number
 type Err struct {
-	c error
 	m string
+	c error
 	t stack
 }
 
 // Error implements the error interface
 func (e Err) Error() string {
-	if e.c == nil {
-		return e.m
-	}
-	s := strings.Builder{}
-	s.WriteString(e.m)
-	s.WriteString("\n")
-	s.WriteString(e.c.Error())
-	return s.String()
+	return e.m
 }
 
 // Unwrap implements the errors.Wrapper interface

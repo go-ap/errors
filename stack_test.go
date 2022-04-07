@@ -57,7 +57,7 @@ func TestFrameFormat(t *testing.T) {
 		initpc,
 		"%+s",
 		"github.com/go-ap/errors.init\n" +
-			"\t.+/go-ap/errors/stack_test.go",
+			"\t.+/errors/stack_test.go",
 	}, {
 		0,
 		"%s",
@@ -104,7 +104,7 @@ func TestFrameFormat(t *testing.T) {
 		initpc,
 		"%+v",
 		"github.com/go-ap/errors.init\n" +
-			"\t.+/go-ap/errors/stack_test.go:11",
+			"\t.+/errors/stack_test.go:11",
 	}, {
 		0,
 		"%v",
@@ -144,19 +144,19 @@ func TestStackTrace(t *testing.T) {
 	}{{
 		Newf("ooh"), []string{
 			"github.com/go-ap/errors.TestStackTrace\n" +
-				"\t.+/go-ap/errors/stack_test.go:145",
+				"\t.+/errors/stack_test.go:145",
 		},
 	}, {
 		wrap(Newf("ooh"), "ahh"), []string{
 			"github.com/go-ap/errors.TestStackTrace\n" +
-				"\t.+/go-ap/errors/stack_test.go:150", // this is the stack of Wrap, not New
+				"\t.+/errors/stack_test.go:150", // this is the stack of Wrap, not New
 		},
 	}, {
 		func() error { return Newf("ooh") }(), []string{
 			`github.com/go-ap/errors.TestStackTrace.func1` +
-				"\n\t.+/go-ap/errors/stack_test.go:155", // this is the stack of New
+				"\n\t.+/errors/stack_test.go:155", // this is the stack of New
 			"github.com/go-ap/errors.TestStackTrace\n" +
-				"\t.+/go-ap/errors/stack_test.go:155", // this is the stack of New's caller
+				"\t.+/errors/stack_test.go:155", // this is the stack of New's caller
 		},
 	}}
 	for i, tt := range tests {
@@ -235,9 +235,9 @@ func TestStackTraceFormat(t *testing.T) {
 		"%+v",
 		"\n" +
 			"github.com/go-ap/errors.stackTrace\n" +
-			"\t.+/go-ap/errors/stack_test.go:183\n" +
+			"\t.+/errors/stack_test.go:183\n" +
 			"github.com/go-ap/errors.TestStackTraceFormat\n" +
-			"\t.+/go-ap/errors/stack_test.go:234",
+			"\t.+/errors/stack_test.go:234",
 	}, {
 		stackTrace()[:2],
 		"%#v",

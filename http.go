@@ -89,7 +89,6 @@ func WrapWithStatus(status int, err error, s string, args ...interface{}) error 
 		return NewNotValid(err, s, args...)
 	// case http.StatusProxyAuthRequired
 	// case http.StatusRequestTimeout
-	//  TODO(marius): http.StatusConflict
 	case http.StatusConflict:
 		return NewConflict(err, s, args...)
 	case http.StatusGone:
@@ -648,7 +647,7 @@ func HttpStatus(e error) int {
 		return http.StatusGone
 	}
 	//  TODO(marius): http.StatusGone
-	//  http.StatusLengthRequres
+	//  http.StatusLengthRequires
 	//  http.StatusPreconditionFailed
 	//  http.StatusRequestEntityTooLarge
 	//  http.StatusRequestURITooLong
@@ -702,7 +701,8 @@ func errorFromStatus(status int) Error {
 		return new(notValid)
 	// case http.StatusProxyAuthRequired:
 	//  case http.StatusRequestTimeout:
-	//  case shttp.StatusConflict: // TODO(marius):
+	case http.StatusConflict:
+		return new(conflict)
 	//  case http.StatusGone: // TODO(marius):
 	//  case http.StatusLengthRequres:
 	//  case http.StatusPreconditionFailed:

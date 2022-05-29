@@ -557,7 +557,9 @@ func (h ErrorHandlerFn) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var status int
 
 	if err := h(w, r); err != nil {
-		status, dat = RenderErrors(r, err)
+		if status, dat = RenderErrors(r, err); status == 0 {
+			status = http.StatusInternalServerError
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")

@@ -2,6 +2,7 @@ package errors
 
 import (
 	"fmt"
+	"net/http"
 	"reflect"
 	"testing"
 )
@@ -221,7 +222,7 @@ func TestIsBadRequest(t *testing.T) {
 }
 
 func TestBadRequest_As(t *testing.T) {
-	e := badRequest{Err{m: "test", c: fmt.Errorf("ttt")}}
+	e := badRequest{Err: Err{m: "test", c: fmt.Errorf("ttt")}, s: http.StatusBadRequest}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -287,7 +288,7 @@ func TestBadRequest_Is(t *testing.T) {
 }
 
 func TestBadRequest_Unwrap(t *testing.T) {
-	e := badRequest{Err{c: fmt.Errorf("ttt")}}
+	e := badRequest{Err: Err{c: fmt.Errorf("ttt")}, s: http.StatusBadRequest}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)
@@ -311,7 +312,7 @@ func TestIsForbidden(t *testing.T) {
 }
 
 func TestForbidden_As(t *testing.T) {
-	e := forbidden{Err{m: "test", c: fmt.Errorf("ttt")}}
+	e := forbidden{Err: Err{m: "test", c: fmt.Errorf("ttt")}, s: http.StatusForbidden}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -377,7 +378,7 @@ func TestForbidden_Is(t *testing.T) {
 }
 
 func TestForbidden_Unwrap(t *testing.T) {
-	e := forbidden{Err{c: fmt.Errorf("ttt")}}
+	e := forbidden{Err: Err{c: fmt.Errorf("ttt")}, s: http.StatusForbidden}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)
@@ -401,7 +402,7 @@ func TestIsMethodNotAllowed(t *testing.T) {
 }
 
 func TestMethodNotAllowed_As(t *testing.T) {
-	e := methodNotAllowed{Err{m: "test", c: fmt.Errorf("ttt")}}
+	e := methodNotAllowed{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -467,7 +468,7 @@ func TestMethodNotAllowed_Is(t *testing.T) {
 }
 
 func TestMethodNotAllowed_Unwrap(t *testing.T) {
-	e := methodNotAllowed{Err{c: fmt.Errorf("ttt")}}
+	e := methodNotAllowed{Err: Err{c: fmt.Errorf("ttt")}}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)
@@ -491,7 +492,7 @@ func TestIsNotFound(t *testing.T) {
 }
 
 func TestNotFound_As(t *testing.T) {
-	e := notFound{Err{m: "test", c: fmt.Errorf("ttt")}}
+	e := notFound{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -557,7 +558,7 @@ func TestNotFound_Is(t *testing.T) {
 }
 
 func TestNotFound_Unwrap(t *testing.T) {
-	e := notFound{Err{c: fmt.Errorf("ttt")}}
+	e := notFound{Err: Err{c: fmt.Errorf("ttt")}}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)
@@ -581,7 +582,7 @@ func TestIsNotImplemented(t *testing.T) {
 }
 
 func TestNotImplemented_As(t *testing.T) {
-	e := notImplemented{Err{m: "test", c: fmt.Errorf("ttt")}}
+	e := notImplemented{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -647,7 +648,7 @@ func TestNotImplemented_Is(t *testing.T) {
 }
 
 func TestNotImplemented_Unwrap(t *testing.T) {
-	e := notImplemented{Err{c: fmt.Errorf("ttt")}}
+	e := notImplemented{Err: Err{c: fmt.Errorf("ttt")}}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)
@@ -671,7 +672,7 @@ func TestIsNotSupported(t *testing.T) {
 }
 
 func TestNotSupported_As(t *testing.T) {
-	e := notSupported{Err{m: "test", c: fmt.Errorf("ttt")}}
+	e := notSupported{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -737,7 +738,7 @@ func TestNotSupported_Is(t *testing.T) {
 }
 
 func TestNotSupported_Unwrap(t *testing.T) {
-	e := notSupported{Err{c: fmt.Errorf("ttt")}}
+	e := notSupported{Err: Err{c: fmt.Errorf("ttt")}}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)
@@ -761,7 +762,7 @@ func TestIsNotValid(t *testing.T) {
 }
 
 func TestNotValid_As(t *testing.T) {
-	e := notValid{Err{m: "test", c: fmt.Errorf("ttt")}}
+	e := notValid{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -827,7 +828,7 @@ func TestNotValid_Is(t *testing.T) {
 }
 
 func TestNotValid_Unwrap(t *testing.T) {
-	e := notValid{Err{c: fmt.Errorf("ttt")}}
+	e := notValid{Err: Err{c: fmt.Errorf("ttt")}}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)
@@ -851,7 +852,7 @@ func TestIsTimeout(t *testing.T) {
 }
 
 func TestTimeout_As(t *testing.T) {
-	e := timeout{Err{m: "test", c: fmt.Errorf("ttt")}}
+	e := timeout{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -917,7 +918,7 @@ func TestTimeout_Is(t *testing.T) {
 }
 
 func TestTimeout_Unwrap(t *testing.T) {
-	e := timeout{Err{c: fmt.Errorf("ttt")}}
+	e := timeout{Err: Err{c: fmt.Errorf("ttt")}}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)

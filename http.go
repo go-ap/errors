@@ -18,51 +18,63 @@ type Error interface {
 
 type notFound struct {
 	Err
+	s int
 }
 
 type methodNotAllowed struct {
 	Err
+	s int
 }
 
 type notValid struct {
 	Err
+	s int
 }
 
 type forbidden struct {
 	Err
+	s int
 }
 
 type notImplemented struct {
 	Err
+	s int
 }
 
 type conflict struct {
 	Err
+	s int
 }
 
 type gone struct {
 	Err
+	s int
 }
 
 type badRequest struct {
 	Err
+	s int
 }
 
 type unauthorized struct {
 	Err
+	s         int
 	challenge string
 }
 
 type notSupported struct {
 	Err
+	s int
 }
 
 type timeout struct {
 	Err
+	s int
 }
 
 type badGateway struct {
 	Err
+	s int
 }
 
 func wrapErr(err error, s string, args ...interface{}) Err {
@@ -70,6 +82,58 @@ func wrapErr(err error, s string, args ...interface{}) Err {
 	asErr := Err{}
 	As(e, &asErr)
 	return asErr
+}
+
+func NewFromStatus(status int, s string, args ...interface{}) error {
+	switch status {
+	case http.StatusBadRequest:
+		return BadRequestf(s, args...)
+	case http.StatusUnauthorized:
+		return Unauthorizedf(s, args...)
+	// http.StatusPaymentRequired
+	case http.StatusForbidden:
+		return Forbiddenf(s, args...)
+	case http.StatusNotFound:
+		return NotFoundf(s, args...)
+	case http.StatusMethodNotAllowed:
+		return MethodNotAllowedf(s, args...)
+	case http.StatusNotAcceptable:
+		return NotValidf(s, args...)
+	// case http.StatusProxyAuthRequired
+	// case http.StatusRequestTimeout
+	case http.StatusConflict:
+		return Conflictf(s, args...)
+	case http.StatusGone:
+		return Gonef(s, args...)
+	// case http.StatusLengthRequres
+	// case http.StatusPreconditionFailed
+	// case http.StatusRequestEntityTooLarge
+	// case http.StatusRequestURITooLong
+	//  TODO(marius): http.StatusUnsupportedMediaType
+	// case http.StatusRequestedRangeNotSatisfiable
+	// case http.StatusExpectationFailed
+	// case http.StatusTeapot
+	// case http.StatusMisdirectedRequest
+	// case http.StatusUnprocessableEntity
+	// case http.StatusLocked
+	// case http.StatusFailedDependency
+	// case http.StatusTooEarly
+	// case http.StatusTooManyRequests
+	// case http.StatusRequestHeaderFieldsTooLarge
+	// case http.StatusUnavailableForLegalReason
+	// case http.StatusInternalServerError
+	case http.StatusNotImplemented:
+		return NotImplementedf(s, args...)
+	case http.StatusBadGateway:
+		return BadGatewayf(s, args...)
+	// case http.StatusServiceUnavailable
+	// case http.StatusGatewayTimeout
+	case http.StatusHTTPVersionNotSupported:
+		return NotSupportedf(s, args...)
+	case http.StatusGatewayTimeout:
+		return Timeoutf(s, args...)
+	}
+	return Newf(s, args...)
 }
 
 func WrapWithStatus(status int, err error, s string, args ...interface{}) error {
@@ -124,76 +188,76 @@ func WrapWithStatus(status int, err error, s string, args ...interface{}) error 
 	return wrapErr(err, s, args...)
 }
 func NotFoundf(s string, args ...interface{}) *notFound {
-	return &notFound{wrapErr(nil, s, args...)}
+	return &notFound{Err: wrapErr(nil, s, args...), s: http.StatusNotFound}
 }
 func NewNotFound(e error, s string, args ...interface{}) *notFound {
-	return &notFound{wrapErr(e, s, args...)}
+	return &notFound{Err: wrapErr(e, s, args...), s: http.StatusNotFound}
 }
 func MethodNotAllowedf(s string, args ...interface{}) *methodNotAllowed {
-	return &methodNotAllowed{wrapErr(nil, s, args...)}
+	return &methodNotAllowed{Err: wrapErr(nil, s, args...), s: http.StatusMethodNotAllowed}
 }
 func NewMethodNotAllowed(e error, s string, args ...interface{}) *methodNotAllowed {
-	return &methodNotAllowed{wrapErr(e, s, args...)}
+	return &methodNotAllowed{Err: wrapErr(e, s, args...), s: http.StatusMethodNotAllowed}
 }
 func NotValidf(s string, args ...interface{}) *notValid {
-	return &notValid{wrapErr(nil, s, args...)}
+	return &notValid{Err: wrapErr(nil, s, args...)}
 }
 func NewNotValid(e error, s string, args ...interface{}) *notValid {
-	return &notValid{wrapErr(e, s, args...)}
+	return &notValid{Err: wrapErr(e, s, args...)}
 }
 func Conflictf(s string, args ...interface{}) *conflict {
-	return &conflict{wrapErr(nil, s, args...)}
+	return &conflict{Err: wrapErr(nil, s, args...), s: http.StatusConflict}
 }
 func NewConflict(e error, s string, args ...interface{}) *conflict {
-	return &conflict{wrapErr(e, s, args...)}
+	return &conflict{Err: wrapErr(e, s, args...), s: http.StatusConflict}
 }
 func Gonef(s string, args ...interface{}) *gone {
-	return &gone{wrapErr(nil, s, args...)}
+	return &gone{Err: wrapErr(nil, s, args...), s: http.StatusGone}
 }
 func NewGone(e error, s string, args ...interface{}) *gone {
-	return &gone{wrapErr(e, s, args...)}
+	return &gone{Err: wrapErr(e, s, args...), s: http.StatusGone}
 }
 func Forbiddenf(s string, args ...interface{}) *forbidden {
-	return &forbidden{wrapErr(nil, s, args...)}
+	return &forbidden{Err: wrapErr(nil, s, args...), s: http.StatusForbidden}
 }
 func NewForbidden(e error, s string, args ...interface{}) *forbidden {
-	return &forbidden{wrapErr(e, s, args...)}
+	return &forbidden{Err: wrapErr(e, s, args...), s: http.StatusForbidden}
 }
 func NotImplementedf(s string, args ...interface{}) *notImplemented {
-	return &notImplemented{wrapErr(nil, s, args...)}
+	return &notImplemented{Err: wrapErr(nil, s, args...), s: http.StatusNotImplemented}
 }
 func NewNotImplemented(e error, s string, args ...interface{}) *notImplemented {
-	return &notImplemented{wrapErr(e, s, args...)}
+	return &notImplemented{Err: wrapErr(e, s, args...), s: http.StatusNotImplemented}
 }
 func BadRequestf(s string, args ...interface{}) *badRequest {
-	return &badRequest{wrapErr(nil, s, args...)}
+	return &badRequest{Err: wrapErr(nil, s, args...), s: http.StatusBadRequest}
 }
 func NewBadRequest(e error, s string, args ...interface{}) *badRequest {
-	return &badRequest{wrapErr(e, s, args...)}
+	return &badRequest{Err: wrapErr(e, s, args...), s: http.StatusBadRequest}
 }
 func Unauthorizedf(s string, args ...interface{}) *unauthorized {
-	return &unauthorized{Err: wrapErr(nil, s, args...)}
+	return &unauthorized{Err: wrapErr(nil, s, args...), s: http.StatusUnauthorized}
 }
 func NewUnauthorized(e error, s string, args ...interface{}) *unauthorized {
-	return &unauthorized{Err: wrapErr(e, s, args...)}
+	return &unauthorized{Err: wrapErr(e, s, args...), s: http.StatusUnauthorized}
 }
 func NotSupportedf(s string, args ...interface{}) *notSupported {
-	return &notSupported{wrapErr(nil, s, args...)}
+	return &notSupported{Err: wrapErr(nil, s, args...), s: http.StatusHTTPVersionNotSupported}
 }
 func NewNotSupported(e error, s string, args ...interface{}) *notSupported {
-	return &notSupported{wrapErr(e, s, args...)}
+	return &notSupported{Err: wrapErr(e, s, args...), s: http.StatusHTTPVersionNotSupported}
 }
 func Timeoutf(s string, args ...interface{}) *timeout {
-	return &timeout{wrapErr(nil, s, args...)}
+	return &timeout{Err: wrapErr(nil, s, args...), s: http.StatusRequestTimeout}
 }
 func NewTimeout(e error, s string, args ...interface{}) *timeout {
-	return &timeout{wrapErr(e, s, args...)}
+	return &timeout{Err: wrapErr(e, s, args...), s: http.StatusRequestTimeout}
 }
 func BadGatewayf(s string, args ...interface{}) *badGateway {
-	return &badGateway{wrapErr(nil, s, args...)}
+	return &badGateway{Err: wrapErr(nil, s, args...), s: http.StatusBadGateway}
 }
 func NewBadGateway(e error, s string, args ...interface{}) *badGateway {
-	return &badGateway{wrapErr(e, s, args...)}
+	return &badGateway{Err: wrapErr(e, s, args...), s: http.StatusBadGateway}
 }
 func IsBadRequest(e error) bool {
 	_, okp := e.(*badRequest)

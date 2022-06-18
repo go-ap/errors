@@ -3,6 +3,7 @@ package errors
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/go-ap/jsonld"
@@ -82,6 +83,26 @@ func wrapErr(err error, s string, args ...interface{}) Err {
 	asErr := Err{}
 	As(e, &asErr)
 	return asErr
+}
+
+func FromResponse(resp *http.Response) error {
+	if resp.StatusCode >= http.StatusBadRequest {
+		body := make([]byte, 0)
+		defer resp.Body.Close()
+
+		body, _ = ioutil.ReadAll(resp.Body)
+
+		errs := make([]error, 0)
+		errors, err := UnmarshalJSON(body)
+		if err != nil {
+			errs = append(errs, err)
+		}
+		for _, err := range errors {
+			errs = append(errs, err)
+		}
+		return NewFromStatus(resp.StatusCode, resp.Status)
+	}
+	return nil
 }
 
 func NewFromStatus(status int, s string, args ...interface{}) error {

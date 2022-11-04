@@ -30,7 +30,7 @@ func (e Err) Format(s fmt.State, verb rune) {
 		switch {
 		case s.Flag('+'):
 			if e.c != nil {
-				io.WriteString(s, "\n\t")
+				io.WriteString(s, ": ")
 				io.WriteString(s, fmt.Sprintf("%+s", e.c))
 			}
 		}
@@ -39,7 +39,7 @@ func (e Err) Format(s fmt.State, verb rune) {
 		switch {
 		case s.Flag('+'):
 			if e.t != nil {
-				io.WriteString(s, ":")
+				io.WriteString(s, "\n\t")
 				e.t.Format(s, 'v')
 			}
 		}

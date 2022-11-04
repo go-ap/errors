@@ -21,7 +21,7 @@ func TestFormat(t *testing.T) {
 	// %+s check for wrapped error
 	e2 := Annotatef(e1, "another")
 	str = fmt.Sprintf("%+s", e2)
-	val := e2.m + "\n\t" + e2.c.Error()
+	val := e2.m + ": " + e2.c.Error()
 	if str != val {
 		t.Errorf("Error message invalid %s, expected %s", str, val)
 	}

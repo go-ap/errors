@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 
 	"github.com/go-ap/jsonld"
 )
@@ -95,15 +94,70 @@ func FromResponse(resp *http.Response) error {
 
 	body, _ = ioutil.ReadAll(resp.Body)
 
-	errs := make([]string, 0)
+	var withStatus error
 	errors, err := UnmarshalJSON(body)
 	if err != nil {
-		errs = append(errs, err.Error())
+		return err
 	}
 	for _, err := range errors {
-		errs = append(errs, err.Error())
+		if err == nil {
+			withStatus = err
+		}
+		withStatus = Annotatef(err, err.Error())
 	}
-	return NewFromStatus(resp.StatusCode, "%s: %s", resp.Status, strings.Join(errs, ": "))
+	return AnnotateFromStatus(withStatus, resp.StatusCode, resp.Status)
+}
+
+func AnnotateFromStatus(err error, status int, s string, args ...interface{}) error {
+	switch status {
+	case http.StatusBadRequest:
+		return NewBadRequest(err, s, args...)
+	case http.StatusUnauthorized:
+		return NewUnauthorized(err, s, args...)
+	// http.StatusPaymentRequired
+	case http.StatusForbidden:
+		return NewForbidden(err, s, args...)
+	case http.StatusNotFound:
+		return NewNotFound(err, s, args...)
+	case http.StatusMethodNotAllowed:
+		return NewMethodNotAllowed(err, s, args...)
+	case http.StatusNotAcceptable:
+		return NewNotValid(err, s, args...)
+	// case http.StatusProxyAuthRequired
+	// case http.StatusRequestTimeout
+	case http.StatusConflict:
+		return NewConflict(err, s, args...)
+	case http.StatusGone:
+		return NewGone(err, s, args...)
+	// case http.StatusLengthRequres
+	// case http.StatusPreconditionFailed
+	// case http.StatusRequestEntityTooLarge
+	// case http.StatusRequestURITooLong
+	//  TODO(marius): http.StatusUnsupportedMediaType
+	// case http.StatusRequestedRangeNotSatisfiable
+	// case http.StatusExpectationFailed
+	// case http.StatusTeapot
+	// case http.StatusMisdirectedRequest
+	// case http.StatusUnprocessableEntity
+	// case http.StatusLocked
+	// case http.StatusFailedDependency
+	// case http.StatusTooEarly
+	// case http.StatusTooManyRequests
+	// case http.StatusRequestHeaderFieldsTooLarge
+	// case http.StatusUnavailableForLegalReason
+	// case http.StatusInternalServerError
+	case http.StatusNotImplemented:
+		return NewNotImplemented(err, s, args...)
+	case http.StatusBadGateway:
+		return NewBadGateway(err, s, args...)
+	// case http.StatusServiceUnavailable
+	// case http.StatusGatewayTimeout
+	case http.StatusHTTPVersionNotSupported:
+		return NewNotSupported(err, s, args...)
+	case http.StatusGatewayTimeout:
+		return NewTimeout(err, s, args...)
+	}
+	return Annotatef(err, s, args...)
 }
 
 func NewFromStatus(status int, s string, args ...interface{}) error {
@@ -416,7 +470,9 @@ func (c conflict) Unwrap() error {
 }
 
 // As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//  if the underlying logic of the receiver's type can understand it.
+//
+//	if the underlying logic of the receiver's type can understand it.
+//
 // In this case we're converting a notFound to its underlying type Err.
 func (n *notFound) As(err interface{}) bool {
 	switch x := err.(type) {
@@ -433,7 +489,9 @@ func (n *notFound) As(err interface{}) bool {
 }
 
 // As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//  if the underlying logic of the receiver's type can understand it.
+//
+//	if the underlying logic of the receiver's type can understand it.
+//
 // In this case we're converting a notValid to its underlying type Err.
 func (n *notValid) As(err interface{}) bool {
 	switch x := err.(type) {
@@ -450,7 +508,9 @@ func (n *notValid) As(err interface{}) bool {
 }
 
 // As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//  if the underlying logic of the receiver's type can understand it.
+//
+//	if the underlying logic of the receiver's type can understand it.
+//
 // In this case we're converting a notImplemented to its underlying type Err.
 func (n *notImplemented) As(err interface{}) bool {
 	switch x := err.(type) {
@@ -467,7 +527,9 @@ func (n *notImplemented) As(err interface{}) bool {
 }
 
 // As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//  if the underlying logic of the receiver's type can understand it.
+//
+//	if the underlying logic of the receiver's type can understand it.
+//
 // In this case we're converting a notSupported to its underlying type Err.
 func (n *notSupported) As(err interface{}) bool {
 	switch x := err.(type) {
@@ -484,7 +546,9 @@ func (n *notSupported) As(err interface{}) bool {
 }
 
 // As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//  if the underlying logic of the receiver's type can understand it.
+//
+//	if the underlying logic of the receiver's type can understand it.
+//
 // In this case we're converting a badRequest to its underlying type Err.
 func (b *badRequest) As(err interface{}) bool {
 	switch x := err.(type) {
@@ -501,7 +565,9 @@ func (b *badRequest) As(err interface{}) bool {
 }
 
 // As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//  if the underlying logic of the receiver's type can understand it.
+//
+//	if the underlying logic of the receiver's type can understand it.
+//
 // In this case we're converting a timeout to its underlying type Err.
 func (t *timeout) As(err interface{}) bool {
 	switch x := err.(type) {
@@ -518,7 +584,9 @@ func (t *timeout) As(err interface{}) bool {
 }
 
 // As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//  if the underlying logic of the receiver's type can understand it.
+//
+//	if the underlying logic of the receiver's type can understand it.
+//
 // In this case we're converting a unauthorized to its underlying type Err.
 func (u *unauthorized) As(err interface{}) bool {
 	switch x := err.(type) {
@@ -535,7 +603,9 @@ func (u *unauthorized) As(err interface{}) bool {
 }
 
 // As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//  if the underlying logic of the receiver's type can understand it.
+//
+//	if the underlying logic of the receiver's type can understand it.
+//
 // In this case we're converting a methodNotAllowed to its underlying type Err.
 func (m *methodNotAllowed) As(err interface{}) bool {
 	switch x := err.(type) {
@@ -552,7 +622,9 @@ func (m *methodNotAllowed) As(err interface{}) bool {
 }
 
 // As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//  if the underlying logic of the receiver's type can understand it.
+//
+//	if the underlying logic of the receiver's type can understand it.
+//
 // In this case we're converting a forbidden to its underlying type Err.
 func (f *forbidden) As(err interface{}) bool {
 	switch x := err.(type) {
@@ -569,7 +641,9 @@ func (f *forbidden) As(err interface{}) bool {
 }
 
 // As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//  if the underlying logic of the receiver's type can understand it.
+//
+//	if the underlying logic of the receiver's type can understand it.
+//
 // In this case we're converting a badGateway to its underlying type Err.
 func (b *badGateway) As(err interface{}) bool {
 	switch x := err.(type) {
@@ -586,7 +660,9 @@ func (b *badGateway) As(err interface{}) bool {
 }
 
 // As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//  if the underlying logic of the receiver's type can understand it.
+//
+//	if the underlying logic of the receiver's type can understand it.
+//
 // In this case we're converting a gone error to its underlying type Err.
 func (g *gone) As(err interface{}) bool {
 	switch x := err.(type) {
@@ -603,7 +679,9 @@ func (g *gone) As(err interface{}) bool {
 }
 
 // As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//  if the underlying logic of the receiver's type can understand it.
+//
+//	if the underlying logic of the receiver's type can understand it.
+//
 // In this case we're converting a conflict error to its underlying type Err.
 func (c *conflict) As(err interface{}) bool {
 	switch x := err.(type) {

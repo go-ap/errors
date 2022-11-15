@@ -738,6 +738,11 @@ func HandleError(e error) ErrorHandlerFn {
 	}
 }
 
+// NotFound is a generic method to return an 404 error HTTP handler that
+var NotFound = ErrorHandlerFn(func(w http.ResponseWriter, r *http.Request) error {
+	return NotFoundf("%s not found", r.URL.Path)
+})
+
 type Http struct {
 	Code    int        `jsonld:"status,omitempty"`
 	Message string     `jsonld:"message"`

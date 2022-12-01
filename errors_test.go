@@ -171,3 +171,68 @@ func TestErr_Unwrap(t *testing.T) {
 	}
 }
 */
+
+func TestErr_Error(t *testing.T) {
+	type fields struct {
+		m string
+		c error
+		t stack
+	}
+	tests := []struct {
+		quiet  bool
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name:   "empty",
+			fields: fields{},
+			want:   "",
+		},
+		{
+			name:   "just text",
+			fields: fields{m: "test"},
+			want:   "test",
+		},
+		{
+			name:   "text with single wrapped error",
+			fields: fields{m: "test", c: fmt.Errorf("error")},
+			want:   "test: error",
+		},
+		{
+			name:   "text with two wrapped errors",
+			fields: fields{m: "test", c: fmt.Errorf("error: %w", Newf("some error"))},
+			want:   "test: error: some error",
+		},
+		{
+			name:   "text with two wrapped errors, but no unwrapping",
+			quiet:  true,
+			fields: fields{m: "test", c: fmt.Errorf("error: %w", Newf("some error"))},
+			want:   "test",
+		},
+		{
+			name:   "text with two wrapped Err errors",
+			fields: fields{m: "test", c: &Err{m: "error", c: &Err{m: "another error"}}},
+			want:   "test: error: another error",
+		},
+		{
+			name:   "text with two wrapped Err errors, without unwrapping",
+			quiet:  true,
+			fields: fields{m: "test", c: &Err{m: "error", c: &Err{m: "another error"}}},
+			want:   "test",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			IncludeBacktrace = tt.quiet
+			e := Err{
+				m: tt.fields.m,
+				c: tt.fields.c,
+				t: tt.fields.t,
+			}
+			if got := e.Error(); got != tt.want {
+				t.Errorf("Error() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

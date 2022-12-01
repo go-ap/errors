@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 )
 
 // Export a number of functions or variables from package errors.
@@ -48,7 +49,16 @@ func (e Err) Format(s fmt.State, verb rune) {
 
 // Error implements the error interface
 func (e Err) Error() string {
-	return e.m
+	if IncludeBacktrace {
+		return e.m
+	}
+	s := strings.Builder{}
+	s.WriteString(e.m)
+	if ch := errors.Unwrap(e); ch != nil {
+		s.WriteString(": ")
+		s.WriteString(ch.Error())
+	}
+	return s.String()
 }
 
 // Unwrap implements the errors.Wrapper interface

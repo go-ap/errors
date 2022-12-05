@@ -97,7 +97,7 @@ func FromResponse(resp *http.Response) error {
 	var withStatus error
 	errors, err := UnmarshalJSON(body)
 	if err != nil {
-		return err
+		return AnnotateFromStatus(nil, resp.StatusCode, string(body))
 	}
 	for _, err := range errors {
 		if err == nil {

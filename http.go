@@ -3,7 +3,7 @@ package errors
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/go-ap/jsonld"
@@ -92,7 +92,7 @@ func FromResponse(resp *http.Response) error {
 	body := make([]byte, 0)
 	defer resp.Body.Close()
 
-	body, _ = ioutil.ReadAll(resp.Body)
+	body, _ = io.ReadAll(resp.Body)
 
 	var withStatus error
 	errors, err := UnmarshalJSON(body)
@@ -721,14 +721,26 @@ func (h ErrorHandlerFn) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var status int
 
 	if err := h(w, r); err != nil {
-		if status, dat = RenderErrors(r, err); status == 0 {
-			status = http.StatusInternalServerError
+		if IsRedirect(err) {
+			w.Header().Set("Location", Location(err))
+			status = HttpStatus(err)
+		} else {
+			if status, dat = RenderErrors(r, err); status == 0 {
+				status = http.StatusInternalServerError
+			}
+			w.Header().Set("Content-Type", "application/json")
 		}
 	}
-
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	w.Write(dat)
+}
+
+func Location(err error) string {
+	r := new(redirect)
+	if As(err, r) {
+		return r.u
+	}
+	return ""
 }
 
 // HandleError is a generic method to return an HTTP handler that passes an error up the chain
@@ -790,6 +802,12 @@ func HttpErrors(err error) []Http {
 }
 
 func HttpStatus(e error) int {
+	if IsRedirect(e) {
+		r := new(redirect)
+		if As(e, r) {
+			return r.s
+		}
+	}
 	if IsBadRequest(e) {
 		return http.StatusBadRequest
 	}

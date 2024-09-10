@@ -1,52 +1,58 @@
 package errors
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
-func SeeOtherf(s string, args ...interface{}) *redirect {
-	return &redirect{Err: wrapErr(nil, s, args...), s: http.StatusSeeOther}
+func SeeOther(u string) *redirect {
+	return &redirect{s: http.StatusSeeOther, u: u}
 }
-func NewSeeOther(e error, s string, args ...interface{}) *redirect {
-	return &redirect{Err: wrapErr(e, s, args...), s: http.StatusSeeOther}
+func NewSeeOther(e error, u string) *redirect {
+	return &redirect{c: e, s: http.StatusSeeOther, u: u}
 }
-func Foundf(s string, args ...interface{}) *redirect {
-	return &redirect{Err: wrapErr(nil, s, args...), s: http.StatusFound}
+func Found(u string) *redirect {
+	return &redirect{s: http.StatusFound, u: u}
 }
-func NewFound(e error, s string, args ...interface{}) *redirect {
-	return &redirect{Err: wrapErr(e, s, args...), s: http.StatusFound}
+func NewFound(e error, u string) *redirect {
+	return &redirect{c: e, s: http.StatusFound, u: u}
 }
-func MovedPermanentlyf(s string, args ...interface{}) *redirect {
-	return &redirect{Err: wrapErr(nil, s, args...), s: http.StatusMovedPermanently}
+func MovedPermanently(u string) *redirect {
+	return &redirect{s: http.StatusMovedPermanently, u: u}
 }
-func NewMovedPermanently(e error, s string, args ...interface{}) *redirect {
-	return &redirect{Err: wrapErr(e, s, args...), s: http.StatusMovedPermanently}
+func NewMovedPermanently(e error, u string) *redirect {
+	return &redirect{c: e, s: http.StatusMovedPermanently, u: u}
 }
-func NotModifiedf(s string, args ...interface{}) *redirect {
-	return &redirect{Err: wrapErr(nil, s, args...), s: http.StatusNotModified}
+func NotModified(u string) *redirect {
+	return &redirect{s: http.StatusNotModified, u: u}
 }
-func NewNotModified(e error, s string, args ...interface{}) *redirect {
-	return &redirect{Err: wrapErr(e, s, args...), s: http.StatusNotModified}
+func NewNotModified(e error, u string) *redirect {
+	return &redirect{c: e, s: http.StatusNotModified, u: u}
 }
-
-func TemporaryRedirectf(s string, args ...interface{}) *redirect {
-	return &redirect{Err: wrapErr(nil, s, args...), s: http.StatusTemporaryRedirect}
+func TemporaryRedirect(u string) *redirect {
+	return &redirect{s: http.StatusTemporaryRedirect, u: u}
 }
-func NewTemporaryRedirect(e error, s string, args ...interface{}) *redirect {
-	return &redirect{Err: wrapErr(e, s, args...), s: http.StatusTemporaryRedirect}
+func NewTemporaryRedirect(e error, u string) *redirect {
+	return &redirect{c: e, s: http.StatusTemporaryRedirect, u: u}
 }
-func PermanentRedirectf(s string, args ...interface{}) *redirect {
-	return &redirect{Err: wrapErr(nil, s, args...), s: http.StatusPermanentRedirect}
+func PermanentRedirect(u string) *redirect {
+	return &redirect{s: http.StatusPermanentRedirect, u: u}
 }
-func NewPermanentRedirect(e error, s string, args ...interface{}) *redirect {
-	return &redirect{Err: wrapErr(e, s, args...), s: http.StatusPermanentRedirect}
+func NewPermanentRedirect(e error, u string) *redirect {
+	return &redirect{c: e, s: http.StatusPermanentRedirect, u: u}
 }
 
 type redirect struct {
-	Err
+	c error
+	u string
 	s int
 }
 
-func (f *redirect) UnmarshalJSON(data []byte) error {
-	return f.Err.UnmarshalJSON(data)
+func (r redirect) Error() string {
+	if r.c == nil {
+		return fmt.Sprintf("Redirect %d to %s", r.s, r.u)
+	}
+	return fmt.Sprintf("Redirect %d to %s: %s", r.s, r.u, r.c)
 }
 
 // As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
@@ -54,21 +60,19 @@ func (f *redirect) UnmarshalJSON(data []byte) error {
 //	if the underlying logic of the receiver's type can understand it.
 //
 // In this case we're converting a forbidden to its underlying type Err.
-func (f *redirect) As(err interface{}) bool {
+func (r *redirect) As(err interface{}) bool {
 	switch x := err.(type) {
 	case **redirect:
-		*x = f
+		*x = r
 	case *redirect:
-		*x = *f
-	case *Err:
-		return f.Err.As(x)
+		*x = *r
 	default:
 		return false
 	}
 	return true
 }
 
-func (f redirect) Is(e error) bool {
+func (r redirect) Is(e error) bool {
 	return IsRedirect(e)
 }
 
@@ -78,6 +82,6 @@ func IsRedirect(e error) bool {
 	return okp || oks || As(e, &redirect{})
 }
 
-func (f redirect) Unwrap() error {
-	return f.Err.Unwrap()
+func (r redirect) Unwrap() error {
+	return r.Unwrap()
 }

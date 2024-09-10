@@ -1,6 +1,6 @@
 module github.com/go-ap/errors
 
-go 1.13
+go 1.20
 
 require (
 	github.com/go-ap/jsonld v0.0.0-20221030091449-f2a191312c73

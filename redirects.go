@@ -73,13 +73,24 @@ func (r *redirect) As(err interface{}) bool {
 }
 
 func (r redirect) Is(e error) bool {
-	return IsRedirect(e)
+	rr := redirect{}
+	return As(e, &rr) && r.s == rr.s
 }
 
 func IsRedirect(e error) bool {
 	_, okp := e.(*redirect)
 	_, oks := e.(redirect)
 	return okp || oks || As(e, &redirect{})
+}
+
+func IsNotModified(e error) bool {
+	ep, okp := e.(*redirect)
+	es, oks := e.(redirect)
+
+	ae := redirect{}
+	return (okp && ep.s == http.StatusNotModified) ||
+		(oks && es.s == http.StatusNotModified) ||
+		(As(e, &ae) && ae.s == http.StatusNotModified)
 }
 
 func (r redirect) Unwrap() error {

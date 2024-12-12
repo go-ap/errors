@@ -110,6 +110,8 @@ func FromResponse(resp *http.Response) error {
 
 func AnnotateFromStatus(err error, status int, s string, args ...interface{}) error {
 	switch status {
+	case http.StatusNotModified:
+		return NewNotModified(err, fmt.Sprintf(s, args...))
 	case http.StatusBadRequest:
 		return NewBadRequest(err, s, args...)
 	case http.StatusUnauthorized:

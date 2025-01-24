@@ -125,35 +125,35 @@ func AnnotateFromStatus(err error, status int, s string, args ...interface{}) er
 		return NewMethodNotAllowed(err, s, args...)
 	case http.StatusNotAcceptable:
 		return NewNotValid(err, s, args...)
-	// case http.StatusProxyAuthRequired
-	// case http.StatusRequestTimeout
+	//case http.StatusProxyAuthRequired
+	//case http.StatusRequestTimeout
 	case http.StatusConflict:
 		return NewConflict(err, s, args...)
 	case http.StatusGone:
 		return NewGone(err, s, args...)
-	// case http.StatusLengthRequres
-	// case http.StatusPreconditionFailed
-	// case http.StatusRequestEntityTooLarge
-	// case http.StatusRequestURITooLong
+	//case http.StatusLengthRequres
+	//case http.StatusPreconditionFailed
+	//case http.StatusRequestEntityTooLarge
+	//case http.StatusRequestURITooLong
 	//  TODO(marius): http.StatusUnsupportedMediaType
-	// case http.StatusRequestedRangeNotSatisfiable
-	// case http.StatusExpectationFailed
-	// case http.StatusTeapot
-	// case http.StatusMisdirectedRequest
-	// case http.StatusUnprocessableEntity
-	// case http.StatusLocked
-	// case http.StatusFailedDependency
-	// case http.StatusTooEarly
-	// case http.StatusTooManyRequests
-	// case http.StatusRequestHeaderFieldsTooLarge
-	// case http.StatusUnavailableForLegalReason
-	// case http.StatusInternalServerError
+	//case http.StatusRequestedRangeNotSatisfiable
+	//case http.StatusExpectationFailed
+	//case http.StatusTeapot
+	//case http.StatusMisdirectedRequest
+	//case http.StatusUnprocessableEntity
+	//case http.StatusLocked
+	//case http.StatusFailedDependency
+	//case http.StatusTooEarly
+	//case http.StatusTooManyRequests
+	//case http.StatusRequestHeaderFieldsTooLarge
+	//case http.StatusUnavailableForLegalReason
+	//case http.StatusInternalServerError
 	case http.StatusNotImplemented:
 		return NewNotImplemented(err, s, args...)
 	case http.StatusBadGateway:
 		return NewBadGateway(err, s, args...)
-	// case http.StatusServiceUnavailable
-	// case http.StatusGatewayTimeout
+	//case http.StatusServiceUnavailable
+	//case http.StatusGatewayTimeout
 	case http.StatusHTTPVersionNotSupported:
 		return NewNotSupported(err, s, args...)
 	case http.StatusGatewayTimeout:
@@ -177,35 +177,35 @@ func NewFromStatus(status int, s string, args ...interface{}) error {
 		return MethodNotAllowedf(s, args...)
 	case http.StatusNotAcceptable:
 		return NotValidf(s, args...)
-	// case http.StatusProxyAuthRequired
-	// case http.StatusRequestTimeout
+	//case http.StatusProxyAuthRequired
+	//case http.StatusRequestTimeout
 	case http.StatusConflict:
 		return Conflictf(s, args...)
 	case http.StatusGone:
 		return Gonef(s, args...)
-	// case http.StatusLengthRequres
-	// case http.StatusPreconditionFailed
-	// case http.StatusRequestEntityTooLarge
-	// case http.StatusRequestURITooLong
+	//case http.StatusLengthRequres
+	//case http.StatusPreconditionFailed
+	//case http.StatusRequestEntityTooLarge
+	//case http.StatusRequestURITooLong
 	//  TODO(marius): http.StatusUnsupportedMediaType
-	// case http.StatusRequestedRangeNotSatisfiable
-	// case http.StatusExpectationFailed
-	// case http.StatusTeapot
-	// case http.StatusMisdirectedRequest
-	// case http.StatusUnprocessableEntity
-	// case http.StatusLocked
-	// case http.StatusFailedDependency
-	// case http.StatusTooEarly
-	// case http.StatusTooManyRequests
-	// case http.StatusRequestHeaderFieldsTooLarge
-	// case http.StatusUnavailableForLegalReason
-	// case http.StatusInternalServerError
+	//case http.StatusRequestedRangeNotSatisfiable
+	//case http.StatusExpectationFailed
+	//case http.StatusTeapot
+	//case http.StatusMisdirectedRequest
+	//case http.StatusUnprocessableEntity
+	//case http.StatusLocked
+	//case http.StatusFailedDependency
+	//case http.StatusTooEarly
+	//case http.StatusTooManyRequests
+	//case http.StatusRequestHeaderFieldsTooLarge
+	//case http.StatusUnavailableForLegalReason
+	//case http.StatusInternalServerError
 	case http.StatusNotImplemented:
 		return NotImplementedf(s, args...)
 	case http.StatusBadGateway:
 		return BadGatewayf(s, args...)
-	// case http.StatusServiceUnavailable
-	// case http.StatusGatewayTimeout
+	//case http.StatusServiceUnavailable
+	//case http.StatusGatewayTimeout
 	case http.StatusHTTPVersionNotSupported:
 		return NotSupportedf(s, args...)
 	case http.StatusGatewayTimeout:
@@ -229,35 +229,35 @@ func WrapWithStatus(status int, err error, s string, args ...interface{}) error 
 		return NewMethodNotAllowed(err, s, args...)
 	case http.StatusNotAcceptable:
 		return NewNotValid(err, s, args...)
-	// case http.StatusProxyAuthRequired
-	// case http.StatusRequestTimeout
+	//case http.StatusProxyAuthRequired
+	//case http.StatusRequestTimeout
 	case http.StatusConflict:
 		return NewConflict(err, s, args...)
 	case http.StatusGone:
 		return NewGone(err, s, args...)
-	// case http.StatusLengthRequres
-	// case http.StatusPreconditionFailed
-	// case http.StatusRequestEntityTooLarge
-	// case http.StatusRequestURITooLong
+	//case http.StatusLengthRequres
+	//case http.StatusPreconditionFailed
+	//case http.StatusRequestEntityTooLarge
+	//case http.StatusRequestURITooLong
 	//  TODO(marius): http.StatusUnsupportedMediaType
-	// case http.StatusRequestedRangeNotSatisfiable
-	// case http.StatusExpectationFailed
-	// case http.StatusTeapot
-	// case http.StatusMisdirectedRequest
-	// case http.StatusUnprocessableEntity
-	// case http.StatusLocked
-	// case http.StatusFailedDependency
-	// case http.StatusTooEarly
-	// case http.StatusTooManyRequests
-	// case http.StatusRequestHeaderFieldsTooLarge
-	// case http.StatusUnavailableForLegalReason
-	// case http.StatusInternalServerError
+	//case http.StatusRequestedRangeNotSatisfiable
+	//case http.StatusExpectationFailed
+	//case http.StatusTeapot
+	//case http.StatusMisdirectedRequest
+	//case http.StatusUnprocessableEntity
+	//case http.StatusLocked
+	//case http.StatusFailedDependency
+	//case http.StatusTooEarly
+	//case http.StatusTooManyRequests
+	//case http.StatusRequestHeaderFieldsTooLarge
+	//case http.StatusUnavailableForLegalReason
+	//case http.StatusInternalServerError
 	case http.StatusNotImplemented:
 		return NewNotImplemented(err, s, args...)
 	case http.StatusBadGateway:
 		return NewBadGateway(err, s, args...)
-	// case http.StatusServiceUnavailable
-	// case http.StatusGatewayTimeout
+	//case http.StatusServiceUnavailable
+	//case http.StatusGatewayTimeout
 	case http.StatusHTTPVersionNotSupported:
 		return NewNotSupported(err, s, args...)
 	case http.StatusGatewayTimeout:
@@ -881,7 +881,7 @@ func errorFromStatus(status int) Error {
 		return new(badRequest)
 	case http.StatusUnauthorized:
 		return new(unauthorized)
-	// case http.StatusPaymentRequired:
+	//case http.StatusPaymentRequired:
 	case http.StatusForbidden:
 		return new(forbidden)
 	case http.StatusNotFound:
@@ -890,33 +890,34 @@ func errorFromStatus(status int) Error {
 		return new(methodNotAllowed)
 	case http.StatusNotAcceptable:
 		return new(notValid)
-	// case http.StatusProxyAuthRequired:
-	//  case http.StatusRequestTimeout:
+	//case http.StatusProxyAuthRequired:
+	//case http.StatusRequestTimeout:
 	case http.StatusConflict:
 		return new(conflict)
-	//  case http.StatusGone: // TODO(marius):
-	//  case http.StatusLengthRequres:
-	//  case http.StatusPreconditionFailed:
-	//  case http.StatusRequestEntityTooLarge:
-	//  case http.StatusRequestURITooLong:
-	//  case http.StatusUnsupportedMediaType: // TODO(marius):
-	//  case http.StatusRequestedRangeNotSatisfiable:
-	//  case http.StatusExpectationFailed:
-	//  case http.StatusTeapot:
-	//  case http.StatusMisdirectedRequest:
-	//  case http.StatusUnprocessableEntity:
-	//  case http.StatusLocked:
-	//  case http.StatusFailedDependency:
-	//  case http.StatusTooEarly:
-	//  case http.StatusTooManyRequests:
-	//  case http.StatusRequestHeaderFieldsTooLarge:
-	//  case http.StatusUnavailableForLegalReason:
-	//  case http.StatusInternalServerError:
+	case http.StatusGone:
+		return new(gone)
+	//case http.StatusLengthRequired:
+	//case http.StatusPreconditionFailed:
+	//case http.StatusRequestEntityTooLarge:
+	//case http.StatusRequestURITooLong:
+	//case http.StatusUnsupportedMediaType: // TODO(marius):
+	//case http.StatusRequestedRangeNotSatisfiable:
+	//case http.StatusExpectationFailed:
+	//case http.StatusTeapot:
+	//case http.StatusMisdirectedRequest:
+	//case http.StatusUnprocessableEntity:
+	//case http.StatusLocked:
+	//case http.StatusFailedDependency:
+	//case http.StatusTooEarly:
+	//case http.StatusTooManyRequests:
+	//case http.StatusRequestHeaderFieldsTooLarge:
+	//case http.StatusUnavailableForLegalReason:
+	//case http.StatusInternalServerError:
 	case http.StatusNotImplemented:
 		return new(notImplemented)
 	case http.StatusBadGateway:
 		return new(badGateway)
-	// case http.StatusServiceUnavailable:
+	//case http.StatusServiceUnavailable:
 	case http.StatusHTTPVersionNotSupported:
 		return new(notSupported)
 	case http.StatusGatewayTimeout:

@@ -32,7 +32,7 @@ func UnmarshalJSON(data []byte) ([]Error, error) {
 	case fastjson.TypeObject:
 		status := v.GetInt("status")
 		localErr := errorFromStatus(status)
-		if err := localErr.UnmarshalJSON(data); err == nil {
+		if err := localErr.UnmarshalJSON([]byte(v.String())); err == nil {
 			items = append(items, localErr)
 		}
 	case fastjson.TypeString:

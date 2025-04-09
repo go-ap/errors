@@ -94,18 +94,15 @@ func FromResponse(resp *http.Response) error {
 
 	body, _ = io.ReadAll(resp.Body)
 
-	var withStatus error
 	errors, err := UnmarshalJSON(body)
 	if err != nil {
 		return AnnotateFromStatus(nil, resp.StatusCode, string(body))
 	}
-	for _, err := range errors {
-		if err == nil {
-			withStatus = err
-		}
-		withStatus = Annotatef(err, err.Error())
+	if len(errors) == 0 {
+		return nil
 	}
-	return AnnotateFromStatus(withStatus, resp.StatusCode, resp.Status)
+
+	return AnnotateFromStatus(Join(errors...), resp.StatusCode, resp.Status)
 }
 
 func AnnotateFromStatus(err error, status int, s string, args ...interface{}) error {

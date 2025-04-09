@@ -4,7 +4,7 @@ import (
 	"github.com/valyala/fastjson"
 )
 
-func UnmarshalJSON(data []byte) ([]Error, error) {
+func UnmarshalJSON(data []byte) ([]error, error) {
 	if len(data) == 0 {
 		return nil, nil
 	}
@@ -18,7 +18,7 @@ func UnmarshalJSON(data []byte) ([]Error, error) {
 	if v == nil {
 		return nil, wrap(nil, "invalid errors array")
 	}
-	items := make([]Error, 0)
+	items := make([]error, 0)
 	switch v.Type() {
 	case fastjson.TypeArray:
 		for _, v := range v.GetArray() {

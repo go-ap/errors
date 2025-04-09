@@ -12,7 +12,7 @@ var (
 	As     = errors.As
 	Is     = errors.Is
 	Unwrap = errors.Unwrap
-	Join   = errors.Join
+	//Join   = errors.Join
 )
 
 // IncludeBacktrace is a static variable that decides if when creating an error we store the backtrace with it.

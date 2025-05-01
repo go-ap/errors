@@ -80,3 +80,6 @@ func (t *timeout) UnmarshalJSON(data []byte) error {
 func (b *badGateway) UnmarshalJSON(data []byte) error {
 	return b.Err.UnmarshalJSON(data)
 }
+func (s *serviceUnavailable) UnmarshalJSON(data []byte) error {
+	return s.Err.UnmarshalJSON(data)
+}

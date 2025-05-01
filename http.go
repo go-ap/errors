@@ -78,6 +78,11 @@ type badGateway struct {
 	s int
 }
 
+type serviceUnavailable struct {
+	Err
+	s int
+}
+
 func wrapErr(err error, s string, args ...interface{}) Err {
 	e := Annotatef(err, s, args...)
 	asErr := Err{}
@@ -253,7 +258,8 @@ func WrapWithStatus(status int, err error, s string, args ...interface{}) error 
 		return NewNotImplemented(err, s, args...)
 	case http.StatusBadGateway:
 		return NewBadGateway(err, s, args...)
-	//case http.StatusServiceUnavailable
+	case http.StatusServiceUnavailable:
+		return NewServiceUnavailable(err, s, args...)
 	//case http.StatusGatewayTimeout
 	case http.StatusHTTPVersionNotSupported:
 		return NewNotSupported(err, s, args...)
@@ -334,6 +340,17 @@ func BadGatewayf(s string, args ...interface{}) *badGateway {
 func NewBadGateway(e error, s string, args ...interface{}) *badGateway {
 	return &badGateway{Err: wrapErr(e, s, args...), s: http.StatusBadGateway}
 }
+func ServiceUnavailablef(s string, args ...interface{}) *serviceUnavailable {
+	return &serviceUnavailable{Err: wrapErr(nil, s, args...), s: http.StatusServiceUnavailable}
+}
+func NewServiceUnavailable(e error, s string, args ...interface{}) *serviceUnavailable {
+	return &serviceUnavailable{Err: wrapErr(e, s, args...), s: http.StatusServiceUnavailable}
+}
+func IsServiceUnavailable(e error) bool {
+	_, okp := e.(*serviceUnavailable)
+	_, oks := e.(serviceUnavailable)
+	return okp || oks || As(e, &serviceUnavailable{})
+}
 func IsBadRequest(e error) bool {
 	_, okp := e.(*badRequest)
 	_, oks := e.(badRequest)
@@ -410,6 +427,9 @@ func (n notSupported) Is(e error) bool {
 func (b badRequest) Is(e error) bool {
 	return IsBadRequest(e)
 }
+func (s serviceUnavailable) Is(e error) bool {
+	return IsServiceUnavailable(e)
+}
 func (t timeout) Is(e error) bool {
 	return IsTimeout(e)
 }
@@ -445,6 +465,9 @@ func (n notSupported) Unwrap() error {
 }
 func (b badRequest) Unwrap() error {
 	return b.Err.Unwrap()
+}
+func (s serviceUnavailable) Unwrap() error {
+	return s.Err.Unwrap()
 }
 func (t timeout) Unwrap() error {
 	return t.Err.Unwrap()
@@ -557,6 +580,20 @@ func (b *badRequest) As(err interface{}) bool {
 		*x = *b
 	case *Err:
 		return b.Err.As(x)
+	default:
+		return false
+	}
+	return true
+}
+
+func (s *serviceUnavailable) As(err interface{}) bool {
+	switch x := err.(type) {
+	case **serviceUnavailable:
+		*x = s
+	case *serviceUnavailable:
+		*x = *s
+	case *Err:
+		return s.Err.As(x)
 	default:
 		return false
 	}
@@ -834,7 +871,6 @@ func HttpStatus(e error) int {
 	if IsGone(e) {
 		return http.StatusGone
 	}
-	//  TODO(marius): http.StatusGone
 	//  http.StatusLengthRequires
 	//  http.StatusPreconditionFailed
 	//  http.StatusRequestEntityTooLarge
@@ -859,7 +895,9 @@ func HttpStatus(e error) int {
 	if IsBadGateway(e) {
 		return http.StatusBadGateway
 	}
-	//  http.StatusServiceUnavailable
+	if IsServiceUnavailable(e) {
+		return http.StatusServiceUnavailable
+	}
 	//  http.StatusGatewayTimeout
 	if IsNotSupported(e) {
 		return http.StatusHTTPVersionNotSupported
@@ -914,7 +952,8 @@ func errorFromStatus(status int) Error {
 		return new(notImplemented)
 	case http.StatusBadGateway:
 		return new(badGateway)
-	//case http.StatusServiceUnavailable:
+	case http.StatusServiceUnavailable:
+		return new(serviceUnavailable)
 	case http.StatusHTTPVersionNotSupported:
 		return new(notSupported)
 	case http.StatusGatewayTimeout:

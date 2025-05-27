@@ -94,5 +94,5 @@ func IsNotModified(e error) bool {
 }
 
 func (r redirect) Unwrap() error {
-	return r.Unwrap()
+	return r.c
 }

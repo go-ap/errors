@@ -800,19 +800,19 @@ type Http struct {
 func HttpErrors(err error) []Http {
 	https := make([]Http, 0)
 
+	withBacktrace := includeBacktrace.Load()
 	load := func(err error) Http {
 		var trace StackTrace
 		var msg string
-		switch e := err.(type) {
-		case *Err:
+		if e, ok := err.(*Err); ok {
 			msg = e.Error()
-			if IncludeBacktrace {
+			if withBacktrace {
 				trace = e.StackTrace()
 			}
-		default:
+		} else {
 			local := new(Err)
 			if ok := As(err, local); ok {
-				if IncludeBacktrace {
+				if withBacktrace {
 					trace = local.StackTrace()
 				}
 			}

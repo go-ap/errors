@@ -10,7 +10,7 @@ import (
 var err = fmt.Errorf("test error")
 
 func TestFormat(t *testing.T) {
-	IncludeBacktrace = false
+	includeBacktrace = false
 	// %+s check for unwrapped error
 	e1 := Newf("test")
 	str := fmt.Sprintf("%+s", e1)
@@ -27,7 +27,7 @@ func TestFormat(t *testing.T) {
 	}
 
 	// %v check for unwrapped error with trace
-	IncludeBacktrace = true
+	includeBacktrace = true
 	e3 := Newf("test1")
 	str = fmt.Sprintf("%+v", e3)
 	if !strings.Contains(str, e3.m) {
@@ -39,7 +39,7 @@ func TestFormat(t *testing.T) {
 }
 
 func TestMarshalJSON(t *testing.T) {
-	IncludeBacktrace = true
+	includeBacktrace = true
 	e := Newf("test")
 
 	b, err := e.t.StackTrace().MarshalJSON()
@@ -224,7 +224,7 @@ func TestErr_Error(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			IncludeBacktrace = tt.quiet
+			includeBacktrace = tt.quiet
 			e := Err{
 				m: tt.fields.m,
 				c: tt.fields.c,

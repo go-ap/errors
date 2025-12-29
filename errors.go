@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"sync/atomic"
 )
 
 // Export a number of functions or variables from package errors.
@@ -15,8 +16,12 @@ var (
 	//Join   = errors.Join
 )
 
-// IncludeBacktrace is a static variable that decides if when creating an error we store the backtrace with it.
-var IncludeBacktrace = true
+// includeBacktrace is a static variable that decides if when creating an error we store the backtrace with it.
+var includeBacktrace atomic.Bool
+
+func SetIncludeBacktrace(v bool) {
+	includeBacktrace.Store(v)
+}
 
 // Err is our custom error type that can store backtrace, file and line number
 type Err struct {
@@ -50,7 +55,7 @@ func (e Err) Format(s fmt.State, verb rune) {
 
 // Error implements the error interface
 func (e Err) Error() string {
-	if IncludeBacktrace {
+	if includeBacktrace.Load() {
 		return e.m
 	}
 	s := strings.Builder{}
@@ -152,7 +157,7 @@ func wrap(e error, s string, args ...interface{}) Err {
 		c: e,
 		m: fmt.Sprintf(s, args...),
 	}
-	if IncludeBacktrace {
+	if includeBacktrace.Load() {
 		causeStackTracer := new(StackTracer)
 		// If our cause has set a stack trace, and that trace is a child of our own function
 		// as inferred by prefix matching our current program counter stack, then we only want

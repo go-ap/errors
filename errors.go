@@ -95,6 +95,19 @@ func Errorf(s string, args ...interface{}) error {
 	return &err
 }
 
+func (e Err) Is(err interface{}) bool {
+	switch err.(type) {
+	case **Err:
+		return true
+	case *Err:
+		return true
+	case Err:
+		return true
+	default:
+		return false
+	}
+}
+
 // As implements support for errors.As
 func (e *Err) As(err interface{}) bool {
 	switch x := err.(type) {
@@ -102,6 +115,8 @@ func (e *Err) As(err interface{}) bool {
 		*x = e
 	case *Err:
 		*x = *e
+	case Err:
+		x = *e
 	default:
 		return false
 	}

@@ -656,23 +656,23 @@ func TestNotImplemented_Unwrap(t *testing.T) {
 }
 
 func TestIsNotSupported(t *testing.T) {
-	e := notSupported{}
+	e := notSupportedVersion{}
 	e1 := &Err{}
 	if IsNotSupported(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &notSupported{}
+	e2 := &notSupportedVersion{}
 	if !IsNotSupported(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := notSupported{}
+	e3 := notSupportedVersion{}
 	if !IsNotSupported(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestNotSupported_As(t *testing.T) {
-	e := notSupported{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
+	e := notSupportedVersion{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -690,7 +690,7 @@ func TestNotSupported_As(t *testing.T) {
 	if e1.c != e.c {
 		t.Errorf("%T parent error should equal %T's, received %T[%s], expected %T[%s]", e1, e, e1.c, e1.c, e.c, e.c)
 	}
-	e2 := &notSupported{}
+	e2 := &notSupportedVersion{}
 	if !e.As(e2) {
 		t.Errorf("%T should be assertable as %T", e, e2)
 	}
@@ -719,7 +719,7 @@ func TestNotSupported_As(t *testing.T) {
 }
 
 func TestNotSupported_Is(t *testing.T) {
-	e := notSupported{}
+	e := notSupportedVersion{}
 	if e.Is(err) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
@@ -727,18 +727,18 @@ func TestNotSupported_Is(t *testing.T) {
 	if e.Is(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &notSupported{}
+	e2 := &notSupportedVersion{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := notSupported{}
+	e3 := notSupportedVersion{}
 	if !e.Is(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestNotSupported_Unwrap(t *testing.T) {
-	e := notSupported{Err: Err{c: fmt.Errorf("ttt")}}
+	e := notSupportedVersion{Err: Err{c: fmt.Errorf("ttt")}}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)

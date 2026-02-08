@@ -76,8 +76,8 @@ func Test_UnmarshalJSON(t *testing.T) {
 					assertEqual(t, g.(*notImplemented).Err, ww.Err)
 				case *badGateway:
 					assertEqual(t, g.(*badGateway).Err, ww.Err)
-				case *notSupported:
-					assertEqual(t, g.(*notSupported).Err, ww.Err)
+				case *notSupportedVersion:
+					assertEqual(t, g.(*notSupportedVersion).Err, ww.Err)
 				case *Err:
 					assertEqual(t, *g.(*Err), *ww)
 				}

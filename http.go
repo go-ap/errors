@@ -52,6 +52,11 @@ type gone struct {
 	s int
 }
 
+type unsupportedMediaType struct {
+	Err
+	s int
+}
+
 type badRequest struct {
 	Err
 	s int
@@ -63,7 +68,7 @@ type unauthorized struct {
 	challenge string
 }
 
-type notSupported struct {
+type notSupportedVersion struct {
 	Err
 	s int
 }
@@ -137,7 +142,8 @@ func AnnotateFromStatus(err error, status int, s string, args ...interface{}) er
 	//case http.StatusPreconditionFailed
 	//case http.StatusRequestEntityTooLarge
 	//case http.StatusRequestURITooLong
-	//  TODO(marius): http.StatusUnsupportedMediaType
+	case http.StatusUnsupportedMediaType:
+		return NewUnsupportedMedia(err, s, args...)
 	//case http.StatusRequestedRangeNotSatisfiable
 	//case http.StatusExpectationFailed
 	//case http.StatusTeapot
@@ -322,11 +328,17 @@ func Unauthorizedf(s string, args ...interface{}) *unauthorized {
 func NewUnauthorized(e error, s string, args ...interface{}) *unauthorized {
 	return &unauthorized{Err: wrapErr(e, s, args...), s: http.StatusUnauthorized}
 }
-func NotSupportedf(s string, args ...interface{}) *notSupported {
-	return &notSupported{Err: wrapErr(nil, s, args...), s: http.StatusHTTPVersionNotSupported}
+func UnsupportedMediaTypef(s string, args ...interface{}) *unsupportedMediaType {
+	return &unsupportedMediaType{Err: wrapErr(nil, s, args...), s: http.StatusUnsupportedMediaType}
 }
-func NewNotSupported(e error, s string, args ...interface{}) *notSupported {
-	return &notSupported{Err: wrapErr(e, s, args...), s: http.StatusHTTPVersionNotSupported}
+func NewUnsupportedMedia(e error, s string, args ...interface{}) *unsupportedMediaType {
+	return &unsupportedMediaType{Err: wrapErr(e, s, args...), s: http.StatusGone}
+}
+func NotSupportedf(s string, args ...interface{}) *notSupportedVersion {
+	return &notSupportedVersion{Err: wrapErr(nil, s, args...), s: http.StatusHTTPVersionNotSupported}
+}
+func NewNotSupported(e error, s string, args ...interface{}) *notSupportedVersion {
+	return &notSupportedVersion{Err: wrapErr(e, s, args...), s: http.StatusHTTPVersionNotSupported}
 }
 func Timeoutf(s string, args ...interface{}) *timeout {
 	return &timeout{Err: wrapErr(nil, s, args...), s: http.StatusRequestTimeout}
@@ -362,8 +374,8 @@ func IsForbidden(e error) bool {
 	return okp || oks || As(e, &forbidden{})
 }
 func IsNotSupported(e error) bool {
-	_, okp := e.(*notSupported)
-	_, oks := e.(notSupported)
+	_, okp := e.(*notSupportedVersion)
+	_, oks := e.(notSupportedVersion)
 	return okp || oks
 }
 func IsConflict(e error) bool {
@@ -375,6 +387,11 @@ func IsGone(e error) bool {
 	_, okp := e.(*gone)
 	_, oks := e.(gone)
 	return okp || oks || As(e, &gone{})
+}
+func IsUnsupportedMedia(e error) bool {
+	_, okp := e.(*unsupportedMediaType)
+	_, oks := e.(unsupportedMediaType)
+	return okp || oks || As(e, &unsupportedMediaType{})
 }
 func IsMethodNotAllowed(e error) bool {
 	_, okp := e.(*methodNotAllowed)
@@ -421,7 +438,7 @@ func (n notValid) Is(e error) bool {
 func (n notImplemented) Is(e error) bool {
 	return IsNotImplemented(e)
 }
-func (n notSupported) Is(e error) bool {
+func (n notSupportedVersion) Is(e error) bool {
 	return IsNotSupported(e)
 }
 func (b badRequest) Is(e error) bool {
@@ -451,6 +468,9 @@ func (g gone) Is(e error) bool {
 func (c conflict) Is(e error) bool {
 	return IsConflict(e)
 }
+func (u unsupportedMediaType) Is(e error) bool {
+	return IsUnsupportedMedia(e)
+}
 func (n notFound) Unwrap() error {
 	return n.Err.Unwrap()
 }
@@ -460,7 +480,7 @@ func (n notValid) Unwrap() error {
 func (n notImplemented) Unwrap() error {
 	return n.Err.Unwrap()
 }
-func (n notSupported) Unwrap() error {
+func (n notSupportedVersion) Unwrap() error {
 	return n.Err.Unwrap()
 }
 func (b badRequest) Unwrap() error {
@@ -486,6 +506,9 @@ func (b badGateway) Unwrap() error {
 }
 func (g gone) Unwrap() error {
 	return g.Err.Unwrap()
+}
+func (u unsupportedMediaType) Unwrap() error {
+	return u.Err.Unwrap()
 }
 func (c conflict) Unwrap() error {
 	return c.Err.Unwrap()
@@ -552,12 +575,12 @@ func (n *notImplemented) As(err interface{}) bool {
 //
 //	if the underlying logic of the receiver's type can understand it.
 //
-// In this case we're converting a notSupported to its underlying type Err.
-func (n *notSupported) As(err interface{}) bool {
+// In this case we're converting a notSupportedVersion to its underlying type Err.
+func (n *notSupportedVersion) As(err interface{}) bool {
 	switch x := err.(type) {
-	case **notSupported:
+	case **notSupportedVersion:
 		*x = n
-	case *notSupported:
+	case *notSupportedVersion:
 		*x = *n
 	case *Err:
 		return n.Err.As(x)
@@ -708,6 +731,20 @@ func (g *gone) As(err interface{}) bool {
 		*x = *g
 	case *Err:
 		return g.Err.As(x)
+	default:
+		return false
+	}
+	return true
+}
+
+func (u *unsupportedMediaType) As(err interface{}) bool {
+	switch x := err.(type) {
+	case **unsupportedMediaType:
+		*x = u
+	case *unsupportedMediaType:
+		*x = *u
+	case *Err:
+		return u.Err.As(x)
 	default:
 		return false
 	}
@@ -875,7 +912,9 @@ func HttpStatus(e error) int {
 	//  http.StatusPreconditionFailed
 	//  http.StatusRequestEntityTooLarge
 	//  http.StatusRequestURITooLong
-	//  TODO(marius): http.StatusUnsupportedMediaType
+	if IsUnsupportedMedia(e) {
+		return http.StatusUnsupportedMediaType
+	}
 	//  http.StatusRequestedRangeNotSatisfiable
 	//  http.StatusExpectationFailed
 	//  http.StatusTeapot
@@ -935,7 +974,8 @@ func errorFromStatus(status int) Error {
 	//case http.StatusPreconditionFailed:
 	//case http.StatusRequestEntityTooLarge:
 	//case http.StatusRequestURITooLong:
-	//case http.StatusUnsupportedMediaType: // TODO(marius):
+	case http.StatusUnsupportedMediaType:
+		return new(unsupportedMediaType)
 	//case http.StatusRequestedRangeNotSatisfiable:
 	//case http.StatusExpectationFailed:
 	//case http.StatusTeapot:
@@ -955,7 +995,7 @@ func errorFromStatus(status int) Error {
 	case http.StatusServiceUnavailable:
 		return new(serviceUnavailable)
 	case http.StatusHTTPVersionNotSupported:
-		return new(notSupported)
+		return new(notSupportedVersion)
 	case http.StatusGatewayTimeout:
 		return new(badGateway)
 	case http.StatusInternalServerError:

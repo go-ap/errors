@@ -71,7 +71,7 @@ func (b *badRequest) UnmarshalJSON(data []byte) error {
 func (u *unauthorized) UnmarshalJSON(data []byte) error {
 	return u.Err.UnmarshalJSON(data)
 }
-func (n *notSupported) UnmarshalJSON(data []byte) error {
+func (n *notSupportedVersion) UnmarshalJSON(data []byte) error {
 	return n.Err.UnmarshalJSON(data)
 }
 func (t *timeout) UnmarshalJSON(data []byte) error {
@@ -82,4 +82,10 @@ func (b *badGateway) UnmarshalJSON(data []byte) error {
 }
 func (s *serviceUnavailable) UnmarshalJSON(data []byte) error {
 	return s.Err.UnmarshalJSON(data)
+}
+func (g *gone) UnmarshalJSON(data []byte) error {
+	return g.Err.UnmarshalJSON(data)
+}
+func (u *unsupportedMediaType) UnmarshalJSON(data []byte) error {
+	return u.Err.UnmarshalJSON(data)
 }

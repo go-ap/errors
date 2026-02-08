@@ -8,7 +8,7 @@ import (
 )
 
 func TestBadRequestf(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := BadRequestf(errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -19,7 +19,7 @@ func TestBadRequestf(t *testing.T) {
 }
 
 func TestForbiddenf(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := Forbiddenf(errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -30,7 +30,7 @@ func TestForbiddenf(t *testing.T) {
 }
 
 func TestMethodNotAllowedf(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := MethodNotAllowedf(errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -41,7 +41,7 @@ func TestMethodNotAllowedf(t *testing.T) {
 }
 
 func TestMethodNotFoundf(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := NotFoundf(errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -52,7 +52,7 @@ func TestMethodNotFoundf(t *testing.T) {
 }
 
 func TestNotImplementedf(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := NotImplementedf(errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -63,7 +63,7 @@ func TestNotImplementedf(t *testing.T) {
 }
 
 func TestNotSupportedf(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := NotSupportedf(errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -74,7 +74,7 @@ func TestNotSupportedf(t *testing.T) {
 }
 
 func TestNotValidf(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := NotValidf(errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -85,7 +85,7 @@ func TestNotValidf(t *testing.T) {
 }
 
 func TestTimeoutf(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := Timeoutf(errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -96,7 +96,7 @@ func TestTimeoutf(t *testing.T) {
 }
 
 func TestUnauthorizedf(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := Unauthorizedf(errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -107,7 +107,7 @@ func TestUnauthorizedf(t *testing.T) {
 }
 
 func TestNewBadRequest(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := NewBadRequest(err, errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -118,7 +118,7 @@ func TestNewBadRequest(t *testing.T) {
 }
 
 func TestNewForbidden(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := NewForbidden(err, errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -129,7 +129,7 @@ func TestNewForbidden(t *testing.T) {
 }
 
 func TestNewMethodNotAllowed(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := NewMethodNotAllowed(err, errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -140,7 +140,7 @@ func TestNewMethodNotAllowed(t *testing.T) {
 }
 
 func TestNewNotFound(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := NewNotFound(err, errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -151,7 +151,7 @@ func TestNewNotFound(t *testing.T) {
 }
 
 func TestNewNotImplemented(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := NewNotImplemented(err, errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -162,7 +162,7 @@ func TestNewNotImplemented(t *testing.T) {
 }
 
 func TestNewNotSupported(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := NewNotSupported(err, errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -173,7 +173,7 @@ func TestNewNotSupported(t *testing.T) {
 }
 
 func TestNewNotValid(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := NewNotValid(err, errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -184,7 +184,7 @@ func TestNewNotValid(t *testing.T) {
 }
 
 func TestNewTimeout(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := NewTimeout(err, errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
@@ -195,7 +195,7 @@ func TestNewTimeout(t *testing.T) {
 }
 
 func TestNewUnauthorized(t *testing.T) {
-	errMsg := "test"
+	const errMsg = "test"
 	e := NewUnauthorized(err, errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)

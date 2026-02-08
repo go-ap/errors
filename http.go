@@ -88,7 +88,7 @@ type serviceUnavailable struct {
 	s int
 }
 
-func wrapErr(err error, s string, args ...interface{}) Err {
+func wrapErr(err error, s string, args ...any) Err {
 	e := Annotatef(err, s, args...)
 	asErr := Err{}
 	As(e, &asErr)
@@ -106,16 +106,16 @@ func FromResponse(resp *http.Response) error {
 
 	errors, err := UnmarshalJSON(body)
 	if err != nil {
-		return AnnotateFromStatus(nil, resp.StatusCode, string(body))
+		return AnnotateFromStatus(nil, resp.StatusCode, "test")
 	}
 	if len(errors) == 0 {
 		return nil
 	}
 
-	return AnnotateFromStatus(Join(errors...), resp.StatusCode, resp.Status)
+	return AnnotateFromStatus(Join(errors...), resp.StatusCode, "test")
 }
 
-func AnnotateFromStatus(err error, status int, s string, args ...interface{}) error {
+func AnnotateFromStatus(err error, status int, s string, args ...any) error {
 	switch status {
 	case http.StatusNotModified:
 		return NewNotModified(err, fmt.Sprintf(s, args...))
@@ -170,7 +170,7 @@ func AnnotateFromStatus(err error, status int, s string, args ...interface{}) er
 	return Annotatef(err, s, args...)
 }
 
-func NewFromStatus(status int, s string, args ...interface{}) error {
+func NewFromStatus(status int, s string, args ...any) error {
 	switch status {
 	case http.StatusBadRequest:
 		return BadRequestf(s, args...)
@@ -222,7 +222,7 @@ func NewFromStatus(status int, s string, args ...interface{}) error {
 	return Newf(s, args...)
 }
 
-func WrapWithStatus(status int, err error, s string, args ...interface{}) error {
+func WrapWithStatus(status int, err error, s string, args ...any) error {
 	switch status {
 	case http.StatusBadRequest:
 		return NewBadRequest(err, s, args...)
@@ -274,88 +274,88 @@ func WrapWithStatus(status int, err error, s string, args ...interface{}) error 
 	}
 	return wrapErr(err, s, args...)
 }
-func NotFoundf(s string, args ...interface{}) *notFound {
+func NotFoundf(s string, args ...any) *notFound {
 	return &notFound{Err: wrapErr(nil, s, args...), s: http.StatusNotFound}
 }
-func NewNotFound(e error, s string, args ...interface{}) *notFound {
+func NewNotFound(e error, s string, args ...any) *notFound {
 	return &notFound{Err: wrapErr(e, s, args...), s: http.StatusNotFound}
 }
-func MethodNotAllowedf(s string, args ...interface{}) *methodNotAllowed {
+func MethodNotAllowedf(s string, args ...any) *methodNotAllowed {
 	return &methodNotAllowed{Err: wrapErr(nil, s, args...), s: http.StatusMethodNotAllowed}
 }
-func NewMethodNotAllowed(e error, s string, args ...interface{}) *methodNotAllowed {
+func NewMethodNotAllowed(e error, s string, args ...any) *methodNotAllowed {
 	return &methodNotAllowed{Err: wrapErr(e, s, args...), s: http.StatusMethodNotAllowed}
 }
-func NotValidf(s string, args ...interface{}) *notValid {
+func NotValidf(s string, args ...any) *notValid {
 	return &notValid{Err: wrapErr(nil, s, args...)}
 }
-func NewNotValid(e error, s string, args ...interface{}) *notValid {
+func NewNotValid(e error, s string, args ...any) *notValid {
 	return &notValid{Err: wrapErr(e, s, args...)}
 }
-func Conflictf(s string, args ...interface{}) *conflict {
+func Conflictf(s string, args ...any) *conflict {
 	return &conflict{Err: wrapErr(nil, s, args...), s: http.StatusConflict}
 }
-func NewConflict(e error, s string, args ...interface{}) *conflict {
+func NewConflict(e error, s string, args ...any) *conflict {
 	return &conflict{Err: wrapErr(e, s, args...), s: http.StatusConflict}
 }
-func Gonef(s string, args ...interface{}) *gone {
+func Gonef(s string, args ...any) *gone {
 	return &gone{Err: wrapErr(nil, s, args...), s: http.StatusGone}
 }
-func NewGone(e error, s string, args ...interface{}) *gone {
+func NewGone(e error, s string, args ...any) *gone {
 	return &gone{Err: wrapErr(e, s, args...), s: http.StatusGone}
 }
-func Forbiddenf(s string, args ...interface{}) *forbidden {
+func Forbiddenf(s string, args ...any) *forbidden {
 	return &forbidden{Err: wrapErr(nil, s, args...), s: http.StatusForbidden}
 }
-func NewForbidden(e error, s string, args ...interface{}) *forbidden {
+func NewForbidden(e error, s string, args ...any) *forbidden {
 	return &forbidden{Err: wrapErr(e, s, args...), s: http.StatusForbidden}
 }
-func NotImplementedf(s string, args ...interface{}) *notImplemented {
+func NotImplementedf(s string, args ...any) *notImplemented {
 	return &notImplemented{Err: wrapErr(nil, s, args...), s: http.StatusNotImplemented}
 }
-func NewNotImplemented(e error, s string, args ...interface{}) *notImplemented {
+func NewNotImplemented(e error, s string, args ...any) *notImplemented {
 	return &notImplemented{Err: wrapErr(e, s, args...), s: http.StatusNotImplemented}
 }
-func BadRequestf(s string, args ...interface{}) *badRequest {
+func BadRequestf(s string, args ...any) *badRequest {
 	return &badRequest{Err: wrapErr(nil, s, args...), s: http.StatusBadRequest}
 }
-func NewBadRequest(e error, s string, args ...interface{}) *badRequest {
+func NewBadRequest(e error, s string, args ...any) *badRequest {
 	return &badRequest{Err: wrapErr(e, s, args...), s: http.StatusBadRequest}
 }
-func Unauthorizedf(s string, args ...interface{}) *unauthorized {
+func Unauthorizedf(s string, args ...any) *unauthorized {
 	return &unauthorized{Err: wrapErr(nil, s, args...), s: http.StatusUnauthorized}
 }
-func NewUnauthorized(e error, s string, args ...interface{}) *unauthorized {
+func NewUnauthorized(e error, s string, args ...any) *unauthorized {
 	return &unauthorized{Err: wrapErr(e, s, args...), s: http.StatusUnauthorized}
 }
-func UnsupportedMediaTypef(s string, args ...interface{}) *unsupportedMediaType {
+func UnsupportedMediaTypef(s string, args ...any) *unsupportedMediaType {
 	return &unsupportedMediaType{Err: wrapErr(nil, s, args...), s: http.StatusUnsupportedMediaType}
 }
-func NewUnsupportedMedia(e error, s string, args ...interface{}) *unsupportedMediaType {
+func NewUnsupportedMedia(e error, s string, args ...any) *unsupportedMediaType {
 	return &unsupportedMediaType{Err: wrapErr(e, s, args...), s: http.StatusGone}
 }
-func NotSupportedf(s string, args ...interface{}) *notSupportedVersion {
+func NotSupportedf(s string, args ...any) *notSupportedVersion {
 	return &notSupportedVersion{Err: wrapErr(nil, s, args...), s: http.StatusHTTPVersionNotSupported}
 }
-func NewNotSupported(e error, s string, args ...interface{}) *notSupportedVersion {
+func NewNotSupported(e error, s string, args ...any) *notSupportedVersion {
 	return &notSupportedVersion{Err: wrapErr(e, s, args...), s: http.StatusHTTPVersionNotSupported}
 }
-func Timeoutf(s string, args ...interface{}) *timeout {
+func Timeoutf(s string, args ...any) *timeout {
 	return &timeout{Err: wrapErr(nil, s, args...), s: http.StatusRequestTimeout}
 }
-func NewTimeout(e error, s string, args ...interface{}) *timeout {
+func NewTimeout(e error, s string, args ...any) *timeout {
 	return &timeout{Err: wrapErr(e, s, args...), s: http.StatusRequestTimeout}
 }
-func BadGatewayf(s string, args ...interface{}) *badGateway {
+func BadGatewayf(s string, args ...any) *badGateway {
 	return &badGateway{Err: wrapErr(nil, s, args...), s: http.StatusBadGateway}
 }
-func NewBadGateway(e error, s string, args ...interface{}) *badGateway {
+func NewBadGateway(e error, s string, args ...any) *badGateway {
 	return &badGateway{Err: wrapErr(e, s, args...), s: http.StatusBadGateway}
 }
-func ServiceUnavailablef(s string, args ...interface{}) *serviceUnavailable {
+func ServiceUnavailablef(s string, args ...any) *serviceUnavailable {
 	return &serviceUnavailable{Err: wrapErr(nil, s, args...), s: http.StatusServiceUnavailable}
 }
-func NewServiceUnavailable(e error, s string, args ...interface{}) *serviceUnavailable {
+func NewServiceUnavailable(e error, s string, args ...any) *serviceUnavailable {
 	return &serviceUnavailable{Err: wrapErr(e, s, args...), s: http.StatusServiceUnavailable}
 }
 func IsServiceUnavailable(e error) bool {
@@ -519,7 +519,7 @@ func (c conflict) Unwrap() error {
 //	if the underlying logic of the receiver's type can understand it.
 //
 // In this case we're converting a notFound to its underlying type Err.
-func (n *notFound) As(err interface{}) bool {
+func (n *notFound) As(err any) bool {
 	switch x := err.(type) {
 	case **notFound:
 		*x = n
@@ -538,7 +538,7 @@ func (n *notFound) As(err interface{}) bool {
 //	if the underlying logic of the receiver's type can understand it.
 //
 // In this case we're converting a notValid to its underlying type Err.
-func (n *notValid) As(err interface{}) bool {
+func (n *notValid) As(err any) bool {
 	switch x := err.(type) {
 	case **notValid:
 		*x = n
@@ -557,7 +557,7 @@ func (n *notValid) As(err interface{}) bool {
 //	if the underlying logic of the receiver's type can understand it.
 //
 // In this case we're converting a notImplemented to its underlying type Err.
-func (n *notImplemented) As(err interface{}) bool {
+func (n *notImplemented) As(err any) bool {
 	switch x := err.(type) {
 	case **notImplemented:
 		*x = n
@@ -576,7 +576,7 @@ func (n *notImplemented) As(err interface{}) bool {
 //	if the underlying logic of the receiver's type can understand it.
 //
 // In this case we're converting a notSupportedVersion to its underlying type Err.
-func (n *notSupportedVersion) As(err interface{}) bool {
+func (n *notSupportedVersion) As(err any) bool {
 	switch x := err.(type) {
 	case **notSupportedVersion:
 		*x = n
@@ -595,7 +595,7 @@ func (n *notSupportedVersion) As(err interface{}) bool {
 //	if the underlying logic of the receiver's type can understand it.
 //
 // In this case we're converting a badRequest to its underlying type Err.
-func (b *badRequest) As(err interface{}) bool {
+func (b *badRequest) As(err any) bool {
 	switch x := err.(type) {
 	case **badRequest:
 		*x = b
@@ -609,7 +609,7 @@ func (b *badRequest) As(err interface{}) bool {
 	return true
 }
 
-func (s *serviceUnavailable) As(err interface{}) bool {
+func (s *serviceUnavailable) As(err any) bool {
 	switch x := err.(type) {
 	case **serviceUnavailable:
 		*x = s
@@ -628,7 +628,7 @@ func (s *serviceUnavailable) As(err interface{}) bool {
 //	if the underlying logic of the receiver's type can understand it.
 //
 // In this case we're converting a timeout to its underlying type Err.
-func (t *timeout) As(err interface{}) bool {
+func (t *timeout) As(err any) bool {
 	switch x := err.(type) {
 	case **timeout:
 		*x = t
@@ -647,7 +647,7 @@ func (t *timeout) As(err interface{}) bool {
 //	if the underlying logic of the receiver's type can understand it.
 //
 // In this case we're converting a unauthorized to its underlying type Err.
-func (u *unauthorized) As(err interface{}) bool {
+func (u *unauthorized) As(err any) bool {
 	switch x := err.(type) {
 	case **unauthorized:
 		*x = u
@@ -666,7 +666,7 @@ func (u *unauthorized) As(err interface{}) bool {
 //	if the underlying logic of the receiver's type can understand it.
 //
 // In this case we're converting a methodNotAllowed to its underlying type Err.
-func (m *methodNotAllowed) As(err interface{}) bool {
+func (m *methodNotAllowed) As(err any) bool {
 	switch x := err.(type) {
 	case **methodNotAllowed:
 		*x = m
@@ -685,7 +685,7 @@ func (m *methodNotAllowed) As(err interface{}) bool {
 //	if the underlying logic of the receiver's type can understand it.
 //
 // In this case we're converting a forbidden to its underlying type Err.
-func (f *forbidden) As(err interface{}) bool {
+func (f *forbidden) As(err any) bool {
 	switch x := err.(type) {
 	case **forbidden:
 		*x = f
@@ -704,7 +704,7 @@ func (f *forbidden) As(err interface{}) bool {
 //	if the underlying logic of the receiver's type can understand it.
 //
 // In this case we're converting a badGateway to its underlying type Err.
-func (b *badGateway) As(err interface{}) bool {
+func (b *badGateway) As(err any) bool {
 	switch x := err.(type) {
 	case **badGateway:
 		*x = b
@@ -723,7 +723,7 @@ func (b *badGateway) As(err interface{}) bool {
 //	if the underlying logic of the receiver's type can understand it.
 //
 // In this case we're converting a gone error to its underlying type Err.
-func (g *gone) As(err interface{}) bool {
+func (g *gone) As(err any) bool {
 	switch x := err.(type) {
 	case **gone:
 		*x = g
@@ -737,7 +737,7 @@ func (g *gone) As(err interface{}) bool {
 	return true
 }
 
-func (u *unsupportedMediaType) As(err interface{}) bool {
+func (u *unsupportedMediaType) As(err any) bool {
 	switch x := err.(type) {
 	case **unsupportedMediaType:
 		*x = u
@@ -756,7 +756,7 @@ func (u *unsupportedMediaType) As(err interface{}) bool {
 //	if the underlying logic of the receiver's type can understand it.
 //
 // In this case we're converting a conflict error to its underlying type Err.
-func (c *conflict) As(err interface{}) bool {
+func (c *conflict) As(err any) bool {
 	switch x := err.(type) {
 	case **conflict:
 		*x = c

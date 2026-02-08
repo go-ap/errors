@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 var err = fmt.Errorf("test error")
 
 func TestFormat(t *testing.T) {
-	includeBacktrace = false
 	// %+s check for unwrapped error
 	e1 := Newf("test")
 	str := fmt.Sprintf("%+s", e1)
@@ -27,7 +29,7 @@ func TestFormat(t *testing.T) {
 	}
 
 	// %v check for unwrapped error with trace
-	includeBacktrace = true
+	includeBacktrace.Store(true)
 	e3 := Newf("test1")
 	str = fmt.Sprintf("%+v", e3)
 	if !strings.Contains(str, e3.m) {
@@ -39,7 +41,7 @@ func TestFormat(t *testing.T) {
 }
 
 func TestMarshalJSON(t *testing.T) {
-	includeBacktrace = true
+	includeBacktrace.Store(true)
 	e := Newf("test")
 
 	b, err := e.t.StackTrace().MarshalJSON()
@@ -57,10 +59,10 @@ func TestMarshalJSON(t *testing.T) {
 }
 
 func TestAnnotatef(t *testing.T) {
-	testStr := "Annotatef string"
+	const testStr = "Annotatef string"
 	te := Annotatef(err, testStr)
-	if te.c != err {
-		t.Errorf("Invalid parent error %T:%s, expected %T:%s", te.c, te.c, err, err)
+	if !cmp.Equal(te.c, err, cmpopts.EquateErrors()) {
+		t.Errorf("Invalid parent error %s", cmp.Diff(te.c, err, cmpopts.EquateErrors()))
 	}
 	if te.m != testStr {
 		t.Errorf("Invalid error message %s, expected %s", te.m, testStr)
@@ -70,7 +72,7 @@ func TestAnnotatef(t *testing.T) {
 var homeVal = "$HOME"
 
 func TestNewf(t *testing.T) {
-	testStr := "Newf string"
+	const testStr = "Newf string"
 	te := Newf(testStr)
 	if te.c != nil {
 		t.Errorf("Invalid parent error %T:%s, expected nil", te.c, te.c)
@@ -81,7 +83,7 @@ func TestNewf(t *testing.T) {
 }
 
 func TestErrorf(t *testing.T) {
-	testStr := "Errorf string"
+	const testStr = "Errorf string"
 	err := Errorf(testStr)
 	if te, ok := err.(*Err); ok {
 		if te.c != nil {
@@ -224,7 +226,7 @@ func TestErr_Error(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			includeBacktrace = tt.quiet
+			includeBacktrace.Store(tt.quiet)
 			e := Err{
 				m: tt.fields.m,
 				c: tt.fields.c,
@@ -236,3 +238,20 @@ func TestErr_Error(t *testing.T) {
 		})
 	}
 }
+
+func areErrors(a, b any) bool {
+	_, ok1 := a.(error)
+	_, ok2 := b.(error)
+	return ok1 && ok2
+}
+
+func compareErrors(x, y interface{}) bool {
+	xe := x.(error)
+	ye := y.(error)
+	if Is(xe, ye) || Is(ye, xe) {
+		return true
+	}
+	return xe.Error() == ye.Error()
+}
+
+var EquateWeakErrors = cmp.FilterValues(areErrors, cmp.Comparer(compareErrors))

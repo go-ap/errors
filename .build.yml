@@ -1,16 +1,24 @@
 image: archlinux
 packages:
   - go
+  - golangci-lint
 sources:
   - https://github.com/go-ap/errors
 environment:
   GO111MODULE: 'on'
 tasks:
+  - fmt: |
+      cd errors
+      test -z $(gofmt -l .)
   - tests: |
       cd errors
       make test
   - coverage: |
       set -a +x
-      cd errors && make coverage
-      GIT_SHA=$(git rev-parse --verify HEAD)
-      GIT_BRANCH=$(git name-rev --name-only HEAD)
+      cd errors
+      git switch -C master origin/master
+      make coverage
+      #go run github.com/mattn/goveralls@latest -flagname unit-tests -service=${CI_NAME} -coverprofile errors.coverprofile -repotokenfile ~/.coveralls.tok
+  - lint: |
+      cd errors
+      golangci-lint run || true

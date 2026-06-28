@@ -179,12 +179,12 @@ As going one level up the stack in stack.callers() removes meaningful informatio
 	}
 }
 
-func stackTrace() StackTrace {
+func stackTrace() *stack {
 	const depth = 8
 	var pcs [depth]uintptr
 	n := runtime.Callers(1, pcs[:])
 	var st stack = pcs[0:n]
-	return st.StackTrace()
+	return &st
 }
 
 func TestStackTraceFormat(t *testing.T) {
@@ -225,15 +225,15 @@ func TestStackTraceFormat(t *testing.T) {
 		"%#v",
 		`\[\]errors.Frame{}`,
 	}, {
-		stackTrace()[:2],
+		stackTrace().StackTrace()[:2],
 		"%s",
 		`\[stack_test.go stack_test.go\]`,
 	}, {
-		stackTrace()[:2],
+		stackTrace().StackTrace()[:2],
 		"%v",
 		`\[stack_test.go:183 stack_test.go:230\]`,
 	}, {
-		stackTrace()[:2],
+		stackTrace().StackTrace()[:2],
 		"%+v",
 		"\n" +
 			"github.com/go-ap/errors.stackTrace\n" +
@@ -241,7 +241,7 @@ func TestStackTraceFormat(t *testing.T) {
 			"github.com/go-ap/errors.TestStackTraceFormat\n" +
 			"\t.+/errors/stack_test.go:234",
 	}, {
-		stackTrace()[:2],
+		stackTrace().StackTrace()[:2],
 		"%#v",
 		`\[\]errors.Frame{stack_test.go:183, stack_test.go:242}`,
 	}}

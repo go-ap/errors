@@ -37,8 +37,10 @@ func (e Err) Format(s fmt.State, verb rune) {
 		switch {
 		case s.Flag('+'):
 			if e.c != nil {
-				io.WriteString(s, ": ")
-				io.WriteString(s, fmt.Sprintf("%+s", e.c))
+				if em := e.c.Error(); em != "" {
+					io.WriteString(s, ": ")
+					io.WriteString(s, em)
+				}
 			}
 		}
 	case 'v':
@@ -55,14 +57,16 @@ func (e Err) Format(s fmt.State, verb rune) {
 
 // Error implements the error interface
 func (e Err) Error() string {
-	if includeBacktrace.Load() {
-		return e.m
-	}
 	s := strings.Builder{}
 	s.WriteString(e.m)
 	if ch := errors.Unwrap(e); ch != nil {
-		s.WriteString(": ")
-		s.WriteString(ch.Error())
+		if em := ch.Error(); em != "" {
+			s.WriteString(": ")
+			s.WriteString(em)
+		}
+	}
+	if includeBacktrace.Load() && e.t != nil {
+		_, _ = fmt.Fprintf(&s, " %s", e.t.StackTrace())
 	}
 	return s.String()
 }

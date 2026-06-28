@@ -181,10 +181,10 @@ func TestErr_Error(t *testing.T) {
 		t stack
 	}
 	tests := []struct {
-		quiet  bool
-		name   string
-		fields fields
-		want   string
+		withBacktrace bool
+		name          string
+		fields        fields
+		want          string
 	}{
 		{
 			name:   "empty",
@@ -207,30 +207,29 @@ func TestErr_Error(t *testing.T) {
 			want:   "test: error: some error",
 		},
 		{
-			name:   "text with two wrapped errors, but no unwrapping",
-			quiet:  true,
-			fields: fields{m: "test", c: fmt.Errorf("error: %w", Newf("some error"))},
-			want:   "test",
-		},
+			name:          "text with two wrapped errors, but no unwrapping",
+			withBacktrace: true,
+			fields:        fields{m: "test", c: fmt.Errorf("error: %w", Newf("some error"))},
+			want:          "test: error: some error [stack_test.go errors_test.go testing.go asm_amd64.s]"},
 		{
 			name:   "text with two wrapped Err errors",
 			fields: fields{m: "test", c: &Err{m: "error", c: &Err{m: "another error"}}},
 			want:   "test: error: another error",
 		},
 		{
-			name:   "text with two wrapped Err errors, without unwrapping",
-			quiet:  true,
-			fields: fields{m: "test", c: &Err{m: "error", c: &Err{m: "another error"}}},
-			want:   "test",
+			name:          "text with two wrapped Err errors, without unwrapping",
+			withBacktrace: true,
+			fields:        fields{m: "test", c: &Err{m: "error", c: &Err{m: "another error"}}},
+			want:          "test: error: another error [stack_test.go errors_test.go testing.go asm_amd64.s]",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			includeBacktrace.Store(tt.quiet)
+			includeBacktrace.Store(tt.withBacktrace)
 			e := Err{
 				m: tt.fields.m,
 				c: tt.fields.c,
-				t: tt.fields.t,
+				t: *stackTrace(),
 			}
 			if got := e.Error(); got != tt.want {
 				t.Errorf("Error() = %v, want %v", got, tt.want)

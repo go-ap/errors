@@ -17,75 +17,43 @@ type Error interface {
 	json.Unmarshaler
 }
 
-type notFound struct {
+type httpError struct {
 	Err
-	s int
+	s     int
+	extra string
 }
 
-type methodNotAllowed struct {
-	Err
-	s int
+func (h *httpError) As(err any) bool {
+	switch x := err.(type) {
+	case httpError:
+		x = *h
+	case *httpError:
+		x.Err = h.Err
+		x.s = h.s
+		x.extra = h.extra
+	case **httpError:
+		*x = h
+	case *Err:
+		*x = h.Err
+	case Err:
+		x = h.Err
+	default:
+		return false
+	}
+	return true
 }
 
-type notValid struct {
-	Err
-	s int
-}
-
-type forbidden struct {
-	Err
-	s int
-}
-
-type notImplemented struct {
-	Err
-	s int
-}
-
-type conflict struct {
-	Err
-	s int
-}
-
-type gone struct {
-	Err
-	s int
-}
-
-type unsupportedMediaType struct {
-	Err
-	s int
-}
-
-type badRequest struct {
-	Err
-	s int
-}
-
-type unauthorized struct {
-	Err
-	s         int
-	challenge string
-}
-
-type notSupportedVersion struct {
-	Err
-	s int
-}
-
-type timeout struct {
-	Err
-	s int
-}
-
-type badGateway struct {
-	Err
-	s int
-}
-
-type serviceUnavailable struct {
-	Err
-	s int
+func (h *httpError) Is(err any) bool {
+	switch err.(type) {
+	case **httpError:
+		return true
+	case *httpError:
+		return true
+	case httpError:
+		return true
+	default:
+		return false
+	}
 }
 
 func wrapErr(err error, s string, args ...any) Err {
@@ -131,7 +99,7 @@ func AnnotateFromStatus(err error, status int, s string, args ...any) error {
 	case http.StatusMethodNotAllowed:
 		return NewMethodNotAllowed(err, s, args...)
 	case http.StatusNotAcceptable:
-		return NewNotValid(err, s, args...)
+		return NewNotAcceptable(err, s, args...)
 	//case http.StatusProxyAuthRequired
 	//case http.StatusRequestTimeout
 	case http.StatusConflict:
@@ -163,9 +131,9 @@ func AnnotateFromStatus(err error, status int, s string, args ...any) error {
 	//case http.StatusServiceUnavailable
 	//case http.StatusGatewayTimeout
 	case http.StatusHTTPVersionNotSupported:
-		return NewNotSupported(err, s, args...)
+		return NewHTTPVersionNotSupported(err, s, args...)
 	case http.StatusGatewayTimeout:
-		return NewTimeout(err, s, args...)
+		return NewRequestTimeout(err, s, args...)
 	}
 	return Annotatef(err, s, args...)
 }
@@ -184,7 +152,7 @@ func NewFromStatus(status int, s string, args ...any) error {
 	case http.StatusMethodNotAllowed:
 		return MethodNotAllowedf(s, args...)
 	case http.StatusNotAcceptable:
-		return NotValidf(s, args...)
+		return NotAcceptablef(s, args...)
 	//case http.StatusProxyAuthRequired
 	//case http.StatusRequestTimeout
 	case http.StatusConflict:
@@ -215,9 +183,9 @@ func NewFromStatus(status int, s string, args ...any) error {
 	//case http.StatusServiceUnavailable
 	//case http.StatusGatewayTimeout
 	case http.StatusHTTPVersionNotSupported:
-		return NotSupportedf(s, args...)
+		return NotHTTPVersionNotSupportedf(s, args...)
 	case http.StatusGatewayTimeout:
-		return Timeoutf(s, args...)
+		return RequestTimeoutf(s, args...)
 	}
 	return Newf(s, args...)
 }
@@ -236,7 +204,7 @@ func WrapWithStatus(status int, err error, s string, args ...any) error {
 	case http.StatusMethodNotAllowed:
 		return NewMethodNotAllowed(err, s, args...)
 	case http.StatusNotAcceptable:
-		return NewNotValid(err, s, args...)
+		return NewNotAcceptable(err, s, args...)
 	//case http.StatusProxyAuthRequired
 	//case http.StatusRequestTimeout
 	case http.StatusConflict:
@@ -268,519 +236,208 @@ func WrapWithStatus(status int, err error, s string, args ...any) error {
 		return NewServiceUnavailable(err, s, args...)
 	//case http.StatusGatewayTimeout
 	case http.StatusHTTPVersionNotSupported:
-		return NewNotSupported(err, s, args...)
+		return NewHTTPVersionNotSupported(err, s, args...)
 	case http.StatusGatewayTimeout:
-		return NewTimeout(err, s, args...)
+		return NewRequestTimeout(err, s, args...)
 	}
 	return wrapErr(err, s, args...)
 }
-func NotFoundf(s string, args ...any) *notFound {
-	return &notFound{Err: wrapErr(nil, s, args...), s: http.StatusNotFound}
+
+func NotFoundf(s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusNotFound}
 }
-func NewNotFound(e error, s string, args ...any) *notFound {
-	return &notFound{Err: wrapErr(e, s, args...), s: http.StatusNotFound}
+
+func NewNotFound(e error, s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusNotFound}
 }
-func MethodNotAllowedf(s string, args ...any) *methodNotAllowed {
-	return &methodNotAllowed{Err: wrapErr(nil, s, args...), s: http.StatusMethodNotAllowed}
+
+func MethodNotAllowedf(s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusMethodNotAllowed}
 }
-func NewMethodNotAllowed(e error, s string, args ...any) *methodNotAllowed {
-	return &methodNotAllowed{Err: wrapErr(e, s, args...), s: http.StatusMethodNotAllowed}
+
+func NewMethodNotAllowed(e error, s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusMethodNotAllowed}
 }
-func NotValidf(s string, args ...any) *notValid {
-	return &notValid{Err: wrapErr(nil, s, args...)}
+
+func NotAcceptablef(s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusNotAcceptable}
 }
-func NewNotValid(e error, s string, args ...any) *notValid {
-	return &notValid{Err: wrapErr(e, s, args...)}
+
+func NewNotAcceptable(e error, s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusNotAcceptable}
 }
-func Conflictf(s string, args ...any) *conflict {
-	return &conflict{Err: wrapErr(nil, s, args...), s: http.StatusConflict}
+
+func Conflictf(s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusConflict}
 }
-func NewConflict(e error, s string, args ...any) *conflict {
-	return &conflict{Err: wrapErr(e, s, args...), s: http.StatusConflict}
+
+func NewConflict(e error, s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusConflict}
 }
-func Gonef(s string, args ...any) *gone {
-	return &gone{Err: wrapErr(nil, s, args...), s: http.StatusGone}
+
+func Gonef(s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusGone}
 }
-func NewGone(e error, s string, args ...any) *gone {
-	return &gone{Err: wrapErr(e, s, args...), s: http.StatusGone}
+
+func NewGone(e error, s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusGone}
 }
-func Forbiddenf(s string, args ...any) *forbidden {
-	return &forbidden{Err: wrapErr(nil, s, args...), s: http.StatusForbidden}
+
+func Forbiddenf(s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusForbidden}
 }
-func NewForbidden(e error, s string, args ...any) *forbidden {
-	return &forbidden{Err: wrapErr(e, s, args...), s: http.StatusForbidden}
+
+func NewForbidden(e error, s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusForbidden}
 }
-func NotImplementedf(s string, args ...any) *notImplemented {
-	return &notImplemented{Err: wrapErr(nil, s, args...), s: http.StatusNotImplemented}
+
+func NotImplementedf(s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusNotImplemented}
 }
-func NewNotImplemented(e error, s string, args ...any) *notImplemented {
-	return &notImplemented{Err: wrapErr(e, s, args...), s: http.StatusNotImplemented}
+
+func NewNotImplemented(e error, s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusNotImplemented}
 }
-func BadRequestf(s string, args ...any) *badRequest {
-	return &badRequest{Err: wrapErr(nil, s, args...), s: http.StatusBadRequest}
+
+func BadRequestf(s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusBadRequest}
 }
-func NewBadRequest(e error, s string, args ...any) *badRequest {
-	return &badRequest{Err: wrapErr(e, s, args...), s: http.StatusBadRequest}
+
+func NewBadRequest(e error, s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusBadRequest}
 }
-func Unauthorizedf(s string, args ...any) *unauthorized {
-	return &unauthorized{Err: wrapErr(nil, s, args...), s: http.StatusUnauthorized}
+
+func Unauthorizedf(s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusUnauthorized}
 }
-func NewUnauthorized(e error, s string, args ...any) *unauthorized {
-	return &unauthorized{Err: wrapErr(e, s, args...), s: http.StatusUnauthorized}
+
+func NewUnauthorized(e error, s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusUnauthorized}
 }
-func UnsupportedMediaTypef(s string, args ...any) *unsupportedMediaType {
-	return &unsupportedMediaType{Err: wrapErr(nil, s, args...), s: http.StatusUnsupportedMediaType}
+
+func UnsupportedMediaTypef(s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusUnsupportedMediaType}
 }
-func NewUnsupportedMedia(e error, s string, args ...any) *unsupportedMediaType {
-	return &unsupportedMediaType{Err: wrapErr(e, s, args...), s: http.StatusGone}
+
+func NewUnsupportedMedia(e error, s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusGone}
 }
-func NotSupportedf(s string, args ...any) *notSupportedVersion {
-	return &notSupportedVersion{Err: wrapErr(nil, s, args...), s: http.StatusHTTPVersionNotSupported}
+
+func NotHTTPVersionNotSupportedf(s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusHTTPVersionNotSupported}
 }
-func NewNotSupported(e error, s string, args ...any) *notSupportedVersion {
-	return &notSupportedVersion{Err: wrapErr(e, s, args...), s: http.StatusHTTPVersionNotSupported}
+
+func NewHTTPVersionNotSupported(e error, s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusHTTPVersionNotSupported}
 }
-func Timeoutf(s string, args ...any) *timeout {
-	return &timeout{Err: wrapErr(nil, s, args...), s: http.StatusRequestTimeout}
+
+func RequestTimeoutf(s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusRequestTimeout}
 }
-func NewTimeout(e error, s string, args ...any) *timeout {
-	return &timeout{Err: wrapErr(e, s, args...), s: http.StatusRequestTimeout}
+
+func NewRequestTimeout(e error, s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusRequestTimeout}
 }
-func BadGatewayf(s string, args ...any) *badGateway {
-	return &badGateway{Err: wrapErr(nil, s, args...), s: http.StatusBadGateway}
+
+func BadGatewayf(s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusBadGateway}
 }
-func NewBadGateway(e error, s string, args ...any) *badGateway {
-	return &badGateway{Err: wrapErr(e, s, args...), s: http.StatusBadGateway}
+
+func NewBadGateway(e error, s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusBadGateway}
 }
-func ServiceUnavailablef(s string, args ...any) *serviceUnavailable {
-	return &serviceUnavailable{Err: wrapErr(nil, s, args...), s: http.StatusServiceUnavailable}
+
+func ServiceUnavailablef(s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusServiceUnavailable}
 }
-func NewServiceUnavailable(e error, s string, args ...any) *serviceUnavailable {
-	return &serviceUnavailable{Err: wrapErr(e, s, args...), s: http.StatusServiceUnavailable}
+
+func NewServiceUnavailable(e error, s string, args ...any) *httpError {
+	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusServiceUnavailable}
 }
+
+func isHttpError(e error) (*httpError, bool) {
+	switch err := e.(type) {
+	case *httpError:
+		return err, true
+	case httpError:
+		return &err, true
+	default:
+		return nil, false
+	}
+}
+
+func isHttpErrorWithStatus(e error, st int) bool {
+	err, ok := isHttpError(e)
+	if ok {
+		return err.s == st
+	}
+	err = &httpError{}
+	return As(e, err) && err.s == st
+}
+
 func IsServiceUnavailable(e error) bool {
-	_, okp := e.(*serviceUnavailable)
-	_, oks := e.(serviceUnavailable)
-	return okp || oks || As(e, &serviceUnavailable{})
+	return isHttpErrorWithStatus(e, http.StatusServiceUnavailable)
 }
+
 func IsBadRequest(e error) bool {
-	_, okp := e.(*badRequest)
-	_, oks := e.(badRequest)
-	return okp || oks || As(e, &badRequest{})
+	return isHttpErrorWithStatus(e, http.StatusBadRequest)
 }
+
 func IsForbidden(e error) bool {
-	_, okp := e.(*forbidden)
-	_, oks := e.(forbidden)
-	return okp || oks || As(e, &forbidden{})
+	return isHttpErrorWithStatus(e, http.StatusForbidden)
 }
-func IsNotSupported(e error) bool {
-	_, okp := e.(*notSupportedVersion)
-	_, oks := e.(notSupportedVersion)
-	return okp || oks
+func IsHTTPVersionNotSupported(e error) bool {
+	return isHttpErrorWithStatus(e, http.StatusHTTPVersionNotSupported)
 }
 func IsConflict(e error) bool {
-	_, okp := e.(*conflict)
-	_, oks := e.(conflict)
-	return okp || oks || As(e, &conflict{})
+	return isHttpErrorWithStatus(e, http.StatusConflict)
 }
 func IsGone(e error) bool {
-	_, okp := e.(*gone)
-	_, oks := e.(gone)
-	return okp || oks || As(e, &gone{})
+	return isHttpErrorWithStatus(e, http.StatusGone)
 }
-func IsUnsupportedMedia(e error) bool {
-	_, okp := e.(*unsupportedMediaType)
-	_, oks := e.(unsupportedMediaType)
-	return okp || oks || As(e, &unsupportedMediaType{})
+func IsUnsupportedMediaType(e error) bool {
+	return isHttpErrorWithStatus(e, http.StatusUnsupportedMediaType)
 }
+
 func IsMethodNotAllowed(e error) bool {
-	_, okp := e.(*methodNotAllowed)
-	_, oks := e.(methodNotAllowed)
-	return okp || oks || As(e, &methodNotAllowed{})
+	return isHttpErrorWithStatus(e, http.StatusMethodNotAllowed)
 }
+
 func IsNotFound(e error) bool {
-	_, okp := e.(*notFound)
-	_, oks := e.(notFound)
-	return okp || oks || As(e, &notFound{})
+	return isHttpErrorWithStatus(e, http.StatusNotFound)
 }
+
 func IsNotImplemented(e error) bool {
-	_, okp := e.(*notImplemented)
-	_, oks := e.(notImplemented)
-	return okp || oks || As(e, &notImplemented{})
+	return isHttpErrorWithStatus(e, http.StatusNotImplemented)
 }
+
 func IsUnauthorized(e error) bool {
-	_, okp := e.(*unauthorized)
-	_, oks := e.(unauthorized)
-	return okp || oks || As(e, &unauthorized{})
+	return isHttpErrorWithStatus(e, http.StatusUnauthorized)
 }
-func IsTimeout(e error) bool {
-	_, okp := e.(*timeout)
-	_, oks := e.(timeout)
-	return okp || oks || As(e, &timeout{})
+
+func IsRequestTimeout(e error) bool {
+	return isHttpErrorWithStatus(e, http.StatusRequestTimeout)
 }
-func IsNotValid(e error) bool {
-	_, okp := e.(*notValid)
-	_, oks := e.(notValid)
-	return okp || oks || As(e, &notValid{})
+
+func IsStatusNotAcceptable(e error) bool {
+	return isHttpErrorWithStatus(e, http.StatusNotAcceptable)
 }
 
 func IsBadGateway(e error) bool {
-	_, okp := e.(*badGateway)
-	_, oks := e.(badGateway)
-	return okp || oks || As(e, &badGateway{})
-}
-func (n notFound) Is(e error) bool {
-	return IsNotFound(e)
-}
-func (n notValid) Is(e error) bool {
-	return IsNotValid(e)
-}
-func (n notImplemented) Is(e error) bool {
-	return IsNotImplemented(e)
-}
-func (n notSupportedVersion) Is(e error) bool {
-	return IsNotSupported(e)
-}
-func (b badRequest) Is(e error) bool {
-	return IsBadRequest(e)
-}
-func (s serviceUnavailable) Is(e error) bool {
-	return IsServiceUnavailable(e)
-}
-func (t timeout) Is(e error) bool {
-	return IsTimeout(e)
-}
-func (u unauthorized) Is(e error) bool {
-	return IsUnauthorized(e)
-}
-func (m methodNotAllowed) Is(e error) bool {
-	return IsMethodNotAllowed(e)
-}
-func (f forbidden) Is(e error) bool {
-	return IsForbidden(e)
-}
-func (b badGateway) Is(e error) bool {
-	return IsBadGateway(e)
-}
-func (g gone) Is(e error) bool {
-	return IsGone(e)
-}
-func (c conflict) Is(e error) bool {
-	return IsConflict(e)
-}
-func (u unsupportedMediaType) Is(e error) bool {
-	return IsUnsupportedMedia(e)
-}
-func (n notFound) Unwrap() error {
-	return n.Err.Unwrap()
-}
-func (n notValid) Unwrap() error {
-	return n.Err.Unwrap()
-}
-func (n notImplemented) Unwrap() error {
-	return n.Err.Unwrap()
-}
-func (n notSupportedVersion) Unwrap() error {
-	return n.Err.Unwrap()
-}
-func (b badRequest) Unwrap() error {
-	return b.Err.Unwrap()
-}
-func (s serviceUnavailable) Unwrap() error {
-	return s.Err.Unwrap()
-}
-func (t timeout) Unwrap() error {
-	return t.Err.Unwrap()
-}
-func (u unauthorized) Unwrap() error {
-	return u.Err.Unwrap()
-}
-func (m methodNotAllowed) Unwrap() error {
-	return m.Err.Unwrap()
-}
-func (f forbidden) Unwrap() error {
-	return f.Err.Unwrap()
-}
-func (b badGateway) Unwrap() error {
-	return b.Err.Unwrap()
-}
-func (g gone) Unwrap() error {
-	return g.Err.Unwrap()
-}
-func (u unsupportedMediaType) Unwrap() error {
-	return u.Err.Unwrap()
-}
-func (c conflict) Unwrap() error {
-	return c.Err.Unwrap()
-}
-
-// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//
-//	if the underlying logic of the receiver's type can understand it.
-//
-// In this case we're converting a notFound to its underlying type Err.
-func (n *notFound) As(err any) bool {
-	switch x := err.(type) {
-	case **notFound:
-		*x = n
-	case *notFound:
-		*x = *n
-	case *Err:
-		return n.Err.As(x)
-	default:
-		return false
-	}
-	return true
-}
-
-// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//
-//	if the underlying logic of the receiver's type can understand it.
-//
-// In this case we're converting a notValid to its underlying type Err.
-func (n *notValid) As(err any) bool {
-	switch x := err.(type) {
-	case **notValid:
-		*x = n
-	case *notValid:
-		*x = *n
-	case *Err:
-		return n.Err.As(x)
-	default:
-		return false
-	}
-	return true
-}
-
-// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//
-//	if the underlying logic of the receiver's type can understand it.
-//
-// In this case we're converting a notImplemented to its underlying type Err.
-func (n *notImplemented) As(err any) bool {
-	switch x := err.(type) {
-	case **notImplemented:
-		*x = n
-	case *notImplemented:
-		*x = *n
-	case *Err:
-		return n.Err.As(x)
-	default:
-		return false
-	}
-	return true
-}
-
-// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//
-//	if the underlying logic of the receiver's type can understand it.
-//
-// In this case we're converting a notSupportedVersion to its underlying type Err.
-func (n *notSupportedVersion) As(err any) bool {
-	switch x := err.(type) {
-	case **notSupportedVersion:
-		*x = n
-	case *notSupportedVersion:
-		*x = *n
-	case *Err:
-		return n.Err.As(x)
-	default:
-		return false
-	}
-	return true
-}
-
-// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//
-//	if the underlying logic of the receiver's type can understand it.
-//
-// In this case we're converting a badRequest to its underlying type Err.
-func (b *badRequest) As(err any) bool {
-	switch x := err.(type) {
-	case **badRequest:
-		*x = b
-	case *badRequest:
-		*x = *b
-	case *Err:
-		return b.Err.As(x)
-	default:
-		return false
-	}
-	return true
-}
-
-func (s *serviceUnavailable) As(err any) bool {
-	switch x := err.(type) {
-	case **serviceUnavailable:
-		*x = s
-	case *serviceUnavailable:
-		*x = *s
-	case *Err:
-		return s.Err.As(x)
-	default:
-		return false
-	}
-	return true
-}
-
-// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//
-//	if the underlying logic of the receiver's type can understand it.
-//
-// In this case we're converting a timeout to its underlying type Err.
-func (t *timeout) As(err any) bool {
-	switch x := err.(type) {
-	case **timeout:
-		*x = t
-	case *timeout:
-		*x = *t
-	case *Err:
-		return t.Err.As(x)
-	default:
-		return false
-	}
-	return true
-}
-
-// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//
-//	if the underlying logic of the receiver's type can understand it.
-//
-// In this case we're converting a unauthorized to its underlying type Err.
-func (u *unauthorized) As(err any) bool {
-	switch x := err.(type) {
-	case **unauthorized:
-		*x = u
-	case *unauthorized:
-		*x = *u
-	case *Err:
-		return u.Err.As(x)
-	default:
-		return false
-	}
-	return true
-}
-
-// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//
-//	if the underlying logic of the receiver's type can understand it.
-//
-// In this case we're converting a methodNotAllowed to its underlying type Err.
-func (m *methodNotAllowed) As(err any) bool {
-	switch x := err.(type) {
-	case **methodNotAllowed:
-		*x = m
-	case *methodNotAllowed:
-		*x = *m
-	case *Err:
-		return m.Err.As(x)
-	default:
-		return false
-	}
-	return true
-}
-
-// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//
-//	if the underlying logic of the receiver's type can understand it.
-//
-// In this case we're converting a forbidden to its underlying type Err.
-func (f *forbidden) As(err any) bool {
-	switch x := err.(type) {
-	case **forbidden:
-		*x = f
-	case *forbidden:
-		*x = *f
-	case *Err:
-		return f.Err.As(x)
-	default:
-		return false
-	}
-	return true
-}
-
-// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//
-//	if the underlying logic of the receiver's type can understand it.
-//
-// In this case we're converting a badGateway to its underlying type Err.
-func (b *badGateway) As(err any) bool {
-	switch x := err.(type) {
-	case **badGateway:
-		*x = b
-	case *badGateway:
-		*x = *b
-	case *Err:
-		return b.Err.As(x)
-	default:
-		return false
-	}
-	return true
-}
-
-// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//
-//	if the underlying logic of the receiver's type can understand it.
-//
-// In this case we're converting a gone error to its underlying type Err.
-func (g *gone) As(err any) bool {
-	switch x := err.(type) {
-	case **gone:
-		*x = g
-	case *gone:
-		*x = *g
-	case *Err:
-		return g.Err.As(x)
-	default:
-		return false
-	}
-	return true
-}
-
-func (u *unsupportedMediaType) As(err any) bool {
-	switch x := err.(type) {
-	case **unsupportedMediaType:
-		*x = u
-	case *unsupportedMediaType:
-		*x = *u
-	case *Err:
-		return u.Err.As(x)
-	default:
-		return false
-	}
-	return true
-}
-
-// As is used by the errors.As() function to coerce the method's parameter to the one of the receiver
-//
-//	if the underlying logic of the receiver's type can understand it.
-//
-// In this case we're converting a conflict error to its underlying type Err.
-func (c *conflict) As(err any) bool {
-	switch x := err.(type) {
-	case **conflict:
-		*x = c
-	case *conflict:
-		*x = *c
-	case *Err:
-		return c.Err.As(x)
-	default:
-		return false
-	}
-	return true
+	return isHttpErrorWithStatus(e, http.StatusBadGateway)
 }
 
 // Challenge adds a challenge token to be added to the HTTP response
-func (u *unauthorized) Challenge(c string) *unauthorized {
-	u.challenge = c
-	return u
+func (h *httpError) Challenge(c string) *httpError {
+	h.extra = c
+	return h
 }
 
-// Challenge returns the challenge of the err parameter if it's an unauthorized type error
+// Challenge returns the challenge of the err parameter if it's an httpError type error
 func Challenge(err error) string {
-	un := unauthorized{}
+	un := httpError{}
 	if ok := As(err, &un); ok {
-		return un.challenge
+		return un.extra
 	}
 	return ""
 }
@@ -809,9 +466,9 @@ func (h ErrorHandlerFn) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func Location(err error) string {
-	r := new(redirect)
+	r := new(httpError)
 	if As(err, r) {
-		return r.u
+		return r.extra
 	}
 	return ""
 }
@@ -876,7 +533,7 @@ func HttpErrors(err error) []Http {
 
 func HttpStatus(e error) int {
 	if IsRedirect(e) {
-		r := new(redirect)
+		r := new(httpError)
 		if As(e, r) {
 			return r.s
 		}
@@ -897,7 +554,7 @@ func HttpStatus(e error) int {
 	if IsMethodNotAllowed(e) {
 		return http.StatusMethodNotAllowed
 	}
-	if IsNotValid(e) {
+	if IsStatusNotAcceptable(e) {
 		return http.StatusNotAcceptable
 	}
 	//  http.StatusProxyAuthRequired
@@ -912,7 +569,7 @@ func HttpStatus(e error) int {
 	//  http.StatusPreconditionFailed
 	//  http.StatusRequestEntityTooLarge
 	//  http.StatusRequestURITooLong
-	if IsUnsupportedMedia(e) {
+	if IsUnsupportedMediaType(e) {
 		return http.StatusUnsupportedMediaType
 	}
 	//  http.StatusRequestedRangeNotSatisfiable
@@ -938,11 +595,11 @@ func HttpStatus(e error) int {
 		return http.StatusServiceUnavailable
 	}
 	//  http.StatusGatewayTimeout
-	if IsNotSupported(e) {
+	if IsHTTPVersionNotSupported(e) {
 		return http.StatusHTTPVersionNotSupported
 	}
 
-	if IsTimeout(e) {
+	if IsRequestTimeout(e) {
 		return http.StatusGatewayTimeout
 	}
 
@@ -950,59 +607,9 @@ func HttpStatus(e error) int {
 }
 
 func errorFromStatus(status int) Error {
-	switch status {
-	case http.StatusBadRequest:
-		return new(badRequest)
-	case http.StatusUnauthorized:
-		return new(unauthorized)
-	//case http.StatusPaymentRequired:
-	case http.StatusForbidden:
-		return new(forbidden)
-	case http.StatusNotFound:
-		return new(notFound)
-	case http.StatusMethodNotAllowed:
-		return new(methodNotAllowed)
-	case http.StatusNotAcceptable:
-		return new(notValid)
-	//case http.StatusProxyAuthRequired:
-	//case http.StatusRequestTimeout:
-	case http.StatusConflict:
-		return new(conflict)
-	case http.StatusGone:
-		return new(gone)
-	//case http.StatusLengthRequired:
-	//case http.StatusPreconditionFailed:
-	//case http.StatusRequestEntityTooLarge:
-	//case http.StatusRequestURITooLong:
-	case http.StatusUnsupportedMediaType:
-		return new(unsupportedMediaType)
-	//case http.StatusRequestedRangeNotSatisfiable:
-	//case http.StatusExpectationFailed:
-	//case http.StatusTeapot:
-	//case http.StatusMisdirectedRequest:
-	//case http.StatusUnprocessableEntity:
-	//case http.StatusLocked:
-	//case http.StatusFailedDependency:
-	//case http.StatusTooEarly:
-	//case http.StatusTooManyRequests:
-	//case http.StatusRequestHeaderFieldsTooLarge:
-	//case http.StatusUnavailableForLegalReason:
-	//case http.StatusInternalServerError:
-	case http.StatusNotImplemented:
-		return new(notImplemented)
-	case http.StatusBadGateway:
-		return new(badGateway)
-	case http.StatusServiceUnavailable:
-		return new(serviceUnavailable)
-	case http.StatusHTTPVersionNotSupported:
-		return new(notSupportedVersion)
-	case http.StatusGatewayTimeout:
-		return new(badGateway)
-	case http.StatusInternalServerError:
-		fallthrough
-	default:
-		return new(Err)
-	}
+	err := new(httpError)
+	err.s = status
+	return err
 }
 
 // TODO(marius): get a proper ctxt

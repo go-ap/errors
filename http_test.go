@@ -64,7 +64,7 @@ func TestNotImplementedf(t *testing.T) {
 
 func TestNotSupportedf(t *testing.T) {
 	const errMsg = "test"
-	e := NotSupportedf(errMsg)
+	e := NotHTTPVersionNotSupportedf(errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
 	}
@@ -75,7 +75,7 @@ func TestNotSupportedf(t *testing.T) {
 
 func TestNotValidf(t *testing.T) {
 	const errMsg = "test"
-	e := NotValidf(errMsg)
+	e := NotAcceptablef(errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
 	}
@@ -86,7 +86,7 @@ func TestNotValidf(t *testing.T) {
 
 func TestTimeoutf(t *testing.T) {
 	const errMsg = "test"
-	e := Timeoutf(errMsg)
+	e := RequestTimeoutf(errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
 	}
@@ -163,7 +163,7 @@ func TestNewNotImplemented(t *testing.T) {
 
 func TestNewNotSupported(t *testing.T) {
 	const errMsg = "test"
-	e := NewNotSupported(err, errMsg)
+	e := NewHTTPVersionNotSupported(err, errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
 	}
@@ -174,7 +174,7 @@ func TestNewNotSupported(t *testing.T) {
 
 func TestNewNotValid(t *testing.T) {
 	const errMsg = "test"
-	e := NewNotValid(err, errMsg)
+	e := NewNotAcceptable(err, errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
 	}
@@ -185,7 +185,7 @@ func TestNewNotValid(t *testing.T) {
 
 func TestNewTimeout(t *testing.T) {
 	const errMsg = "test"
-	e := NewTimeout(err, errMsg)
+	e := NewRequestTimeout(err, errMsg)
 	if e.m != errMsg {
 		t.Errorf("Invalid %T message %s, expected %s", e, e.m, errMsg)
 	}
@@ -206,23 +206,23 @@ func TestNewUnauthorized(t *testing.T) {
 }
 
 func TestIsBadRequest(t *testing.T) {
-	e := badRequest{}
+	e := httpError{}
 	e1 := &Err{}
 	if IsBadRequest(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &badRequest{}
+	e2 := &httpError{s: http.StatusBadRequest}
 	if !IsBadRequest(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := badRequest{}
+	e3 := httpError{s: http.StatusBadRequest}
 	if !IsBadRequest(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestBadRequest_As(t *testing.T) {
-	e := badRequest{Err: Err{m: "test", c: fmt.Errorf("ttt")}, s: http.StatusBadRequest}
+	e := httpError{Err: Err{m: "test", c: fmt.Errorf("ttt")}, s: http.StatusBadRequest}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -237,10 +237,10 @@ func TestBadRequest_As(t *testing.T) {
 	if !reflect.DeepEqual(e1.t, e.t) {
 		t.Errorf("%T trace should equal %T's, received %v, expected %v", e1, e, e1.t, e.t)
 	}
-	if e1.c != e.c {
+	if !Is(e1.c, e.c) {
 		t.Errorf("%T parent error should equal %T's, received %T[%s], expected %T[%s]", e1, e, e1.c, e1.c, e.c, e.c)
 	}
-	e2 := &badRequest{}
+	e2 := &httpError{}
 	if !e.As(e2) {
 		t.Errorf("%T should be assertable as %T", e, e2)
 	}
@@ -253,7 +253,7 @@ func TestBadRequest_As(t *testing.T) {
 	if e2.c != e.c {
 		t.Errorf("%T parent error should equal %T's, received %T[%s], expected %T[%s]", e2, e, e2.c, e2.c, e.c, e.c)
 	}
-	e3 := e2
+	e3 := *e2
 	if !e.As(&e3) {
 		t.Errorf("%T should be assertable as %T", e, e3)
 	}
@@ -269,7 +269,7 @@ func TestBadRequest_As(t *testing.T) {
 }
 
 func TestBadRequest_Is(t *testing.T) {
-	e := badRequest{}
+	e := httpError{s: http.StatusBadRequest}
 	if e.Is(err) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
@@ -277,18 +277,18 @@ func TestBadRequest_Is(t *testing.T) {
 	if e.Is(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &badRequest{}
+	e2 := &httpError{s: http.StatusBadRequest}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := badRequest{}
+	e3 := httpError{}
 	if !e.Is(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestBadRequest_Unwrap(t *testing.T) {
-	e := badRequest{Err: Err{c: fmt.Errorf("ttt")}, s: http.StatusBadRequest}
+	e := httpError{Err: Err{c: fmt.Errorf("ttt")}, s: http.StatusBadRequest}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)
@@ -296,23 +296,23 @@ func TestBadRequest_Unwrap(t *testing.T) {
 }
 
 func TestIsForbidden(t *testing.T) {
-	e := forbidden{}
+	e := httpError{s: http.StatusForbidden}
 	e1 := &Err{}
 	if IsForbidden(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &forbidden{}
+	e2 := &httpError{s: http.StatusForbidden}
 	if !IsForbidden(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := forbidden{}
+	e3 := httpError{s: http.StatusForbidden}
 	if !IsForbidden(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestForbidden_As(t *testing.T) {
-	e := forbidden{Err: Err{m: "test", c: fmt.Errorf("ttt")}, s: http.StatusForbidden}
+	e := httpError{Err: Err{m: "test", c: fmt.Errorf("ttt")}, s: http.StatusForbidden}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -330,7 +330,7 @@ func TestForbidden_As(t *testing.T) {
 	if e1.c != e.c {
 		t.Errorf("%T parent error should equal %T's, received %T[%s], expected %T[%s]", e1, e, e1.c, e1.c, e.c, e.c)
 	}
-	e2 := &forbidden{}
+	e2 := &httpError{}
 	if !e.As(e2) {
 		t.Errorf("%T should be assertable as %T", e, e2)
 	}
@@ -359,26 +359,26 @@ func TestForbidden_As(t *testing.T) {
 }
 
 func TestForbidden_Is(t *testing.T) {
-	e := forbidden{}
+	e := httpError{}
 	if e.Is(err) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
 	e1 := &Err{}
 	if e.Is(e1) {
-		t.Errorf("%T should not be a valid %T", e1, e)
+		t.Errorf("%T should be a valid %T", e1, e)
 	}
-	e2 := &forbidden{}
+	e2 := &httpError{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := forbidden{}
+	e3 := httpError{}
 	if !e.Is(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestForbidden_Unwrap(t *testing.T) {
-	e := forbidden{Err: Err{c: fmt.Errorf("ttt")}, s: http.StatusForbidden}
+	e := httpError{Err: Err{c: fmt.Errorf("ttt")}, s: http.StatusForbidden}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)
@@ -386,23 +386,23 @@ func TestForbidden_Unwrap(t *testing.T) {
 }
 
 func TestIsMethodNotAllowed(t *testing.T) {
-	e := methodNotAllowed{}
+	e := httpError{s: http.StatusMethodNotAllowed}
 	e1 := &Err{}
 	if IsMethodNotAllowed(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &methodNotAllowed{}
+	e2 := &httpError{s: http.StatusMethodNotAllowed}
 	if !IsMethodNotAllowed(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := methodNotAllowed{}
+	e3 := httpError{s: http.StatusMethodNotAllowed}
 	if !IsMethodNotAllowed(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestMethodNotAllowed_As(t *testing.T) {
-	e := methodNotAllowed{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
+	e := httpError{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -420,7 +420,7 @@ func TestMethodNotAllowed_As(t *testing.T) {
 	if e1.c != e.c {
 		t.Errorf("%T parent error should equal %T's, received %T[%s], expected %T[%s]", e1, e, e1.c, e1.c, e.c, e.c)
 	}
-	e2 := &methodNotAllowed{}
+	e2 := &httpError{}
 	if !e.As(e2) {
 		t.Errorf("%T should be assertable as %T", e, e2)
 	}
@@ -449,7 +449,7 @@ func TestMethodNotAllowed_As(t *testing.T) {
 }
 
 func TestMethodNotAllowed_Is(t *testing.T) {
-	e := methodNotAllowed{}
+	e := httpError{}
 	if e.Is(err) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
@@ -457,18 +457,18 @@ func TestMethodNotAllowed_Is(t *testing.T) {
 	if e.Is(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &methodNotAllowed{}
+	e2 := &httpError{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := methodNotAllowed{}
+	e3 := httpError{}
 	if !e.Is(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestMethodNotAllowed_Unwrap(t *testing.T) {
-	e := methodNotAllowed{Err: Err{c: fmt.Errorf("ttt")}}
+	e := httpError{Err: Err{c: fmt.Errorf("ttt")}}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)
@@ -476,23 +476,23 @@ func TestMethodNotAllowed_Unwrap(t *testing.T) {
 }
 
 func TestIsNotFound(t *testing.T) {
-	e := notFound{}
+	e := httpError{s: http.StatusNotFound}
 	e1 := &Err{}
 	if IsNotFound(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &notFound{}
+	e2 := &httpError{s: http.StatusNotFound}
 	if !IsNotFound(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := notFound{}
+	e3 := httpError{s: http.StatusNotFound}
 	if !IsNotFound(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestNotFound_As(t *testing.T) {
-	e := notFound{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
+	e := httpError{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -510,7 +510,7 @@ func TestNotFound_As(t *testing.T) {
 	if e1.c != e.c {
 		t.Errorf("%T parent error should equal %T's, received %T[%s], expected %T[%s]", e1, e, e1.c, e1.c, e.c, e.c)
 	}
-	e2 := &notFound{}
+	e2 := &httpError{}
 	if !e.As(e2) {
 		t.Errorf("%T should be assertable as %T", e, e2)
 	}
@@ -539,7 +539,7 @@ func TestNotFound_As(t *testing.T) {
 }
 
 func TestNotFound_Is(t *testing.T) {
-	e := notFound{}
+	e := httpError{}
 	if e.Is(err) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
@@ -547,18 +547,18 @@ func TestNotFound_Is(t *testing.T) {
 	if e.Is(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &notFound{}
+	e2 := &httpError{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := notFound{}
+	e3 := httpError{}
 	if !e.Is(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestNotFound_Unwrap(t *testing.T) {
-	e := notFound{Err: Err{c: fmt.Errorf("ttt")}}
+	e := httpError{Err: Err{c: fmt.Errorf("ttt")}}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)
@@ -566,23 +566,23 @@ func TestNotFound_Unwrap(t *testing.T) {
 }
 
 func TestIsNotImplemented(t *testing.T) {
-	e := notImplemented{}
+	e := httpError{s: http.StatusNotImplemented}
 	e1 := &Err{}
 	if IsNotImplemented(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &notImplemented{}
+	e2 := &httpError{s: http.StatusNotImplemented}
 	if !IsNotImplemented(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := notImplemented{}
+	e3 := httpError{s: http.StatusNotImplemented}
 	if !IsNotImplemented(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestNotImplemented_As(t *testing.T) {
-	e := notImplemented{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
+	e := httpError{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -600,7 +600,7 @@ func TestNotImplemented_As(t *testing.T) {
 	if e1.c != e.c {
 		t.Errorf("%T parent error should equal %T's, received %T[%s], expected %T[%s]", e1, e, e1.c, e1.c, e.c, e.c)
 	}
-	e2 := &notImplemented{}
+	e2 := &httpError{}
 	if !e.As(e2) {
 		t.Errorf("%T should be assertable as %T", e, e2)
 	}
@@ -629,7 +629,7 @@ func TestNotImplemented_As(t *testing.T) {
 }
 
 func TestNotImplemented_Is(t *testing.T) {
-	e := notImplemented{}
+	e := httpError{}
 	if e.Is(err) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
@@ -637,42 +637,42 @@ func TestNotImplemented_Is(t *testing.T) {
 	if e.Is(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &notImplemented{}
+	e2 := &httpError{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := notImplemented{}
+	e3 := httpError{}
 	if !e.Is(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestNotImplemented_Unwrap(t *testing.T) {
-	e := notImplemented{Err: Err{c: fmt.Errorf("ttt")}}
+	e := httpError{Err: Err{c: fmt.Errorf("ttt")}}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)
 	}
 }
 
-func TestIsNotSupported(t *testing.T) {
-	e := notSupportedVersion{}
+func TestIsHTTPVersionNotSupported(t *testing.T) {
+	e := httpError{s: http.StatusHTTPVersionNotSupported}
 	e1 := &Err{}
-	if IsNotSupported(e1) {
+	if IsHTTPVersionNotSupported(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &notSupportedVersion{}
-	if !IsNotSupported(e2) {
+	e2 := &httpError{s: http.StatusHTTPVersionNotSupported}
+	if !IsHTTPVersionNotSupported(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := notSupportedVersion{}
-	if !IsNotSupported(e3) {
+	e3 := httpError{s: http.StatusHTTPVersionNotSupported}
+	if !IsHTTPVersionNotSupported(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestNotSupported_As(t *testing.T) {
-	e := notSupportedVersion{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
+	e := httpError{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -690,7 +690,7 @@ func TestNotSupported_As(t *testing.T) {
 	if e1.c != e.c {
 		t.Errorf("%T parent error should equal %T's, received %T[%s], expected %T[%s]", e1, e, e1.c, e1.c, e.c, e.c)
 	}
-	e2 := &notSupportedVersion{}
+	e2 := &httpError{}
 	if !e.As(e2) {
 		t.Errorf("%T should be assertable as %T", e, e2)
 	}
@@ -719,7 +719,7 @@ func TestNotSupported_As(t *testing.T) {
 }
 
 func TestNotSupported_Is(t *testing.T) {
-	e := notSupportedVersion{}
+	e := httpError{}
 	if e.Is(err) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
@@ -727,42 +727,42 @@ func TestNotSupported_Is(t *testing.T) {
 	if e.Is(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &notSupportedVersion{}
+	e2 := &httpError{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := notSupportedVersion{}
+	e3 := httpError{}
 	if !e.Is(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestNotSupported_Unwrap(t *testing.T) {
-	e := notSupportedVersion{Err: Err{c: fmt.Errorf("ttt")}}
+	e := httpError{Err: Err{c: fmt.Errorf("ttt")}}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)
 	}
 }
 
-func TestIsNotValid(t *testing.T) {
-	e := notValid{}
+func TestIsStatusNotAcceptable(t *testing.T) {
+	e := httpError{s: http.StatusNotAcceptable}
 	e1 := &Err{}
-	if IsNotValid(e1) {
+	if IsStatusNotAcceptable(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &notValid{}
-	if !IsNotValid(e2) {
+	e2 := &httpError{s: http.StatusNotAcceptable}
+	if !IsStatusNotAcceptable(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := notValid{}
-	if !IsNotValid(e3) {
+	e3 := httpError{s: http.StatusNotAcceptable}
+	if !IsStatusNotAcceptable(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestNotValid_As(t *testing.T) {
-	e := notValid{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
+	e := httpError{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -780,7 +780,7 @@ func TestNotValid_As(t *testing.T) {
 	if e1.c != e.c {
 		t.Errorf("%T parent error should equal %T's, received %T[%s], expected %T[%s]", e1, e, e1.c, e1.c, e.c, e.c)
 	}
-	e2 := &notValid{}
+	e2 := &httpError{}
 	if !e.As(e2) {
 		t.Errorf("%T should be assertable as %T", e, e2)
 	}
@@ -809,7 +809,7 @@ func TestNotValid_As(t *testing.T) {
 }
 
 func TestNotValid_Is(t *testing.T) {
-	e := notValid{}
+	e := httpError{}
 	if e.Is(err) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
@@ -817,42 +817,42 @@ func TestNotValid_Is(t *testing.T) {
 	if e.Is(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &notValid{}
+	e2 := &httpError{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := notValid{}
+	e3 := httpError{}
 	if !e.Is(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestNotValid_Unwrap(t *testing.T) {
-	e := notValid{Err: Err{c: fmt.Errorf("ttt")}}
+	e := httpError{Err: Err{c: fmt.Errorf("ttt")}}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)
 	}
 }
 
-func TestIsTimeout(t *testing.T) {
-	e := timeout{}
+func TestIsRequestTimeout(t *testing.T) {
+	e := httpError{s: http.StatusRequestTimeout}
 	e1 := &Err{}
-	if IsTimeout(e1) {
+	if IsRequestTimeout(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &timeout{}
-	if !IsTimeout(e2) {
+	e2 := &httpError{s: http.StatusRequestTimeout}
+	if !IsRequestTimeout(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := timeout{}
-	if !IsTimeout(e3) {
+	e3 := httpError{s: http.StatusRequestTimeout}
+	if !IsRequestTimeout(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestTimeout_As(t *testing.T) {
-	e := timeout{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
+	e := httpError{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -870,7 +870,7 @@ func TestTimeout_As(t *testing.T) {
 	if e1.c != e.c {
 		t.Errorf("%T parent error should equal %T's, received %T[%s], expected %T[%s]", e1, e, e1.c, e1.c, e.c, e.c)
 	}
-	e2 := &timeout{}
+	e2 := &httpError{}
 	if !e.As(e2) {
 		t.Errorf("%T should be assertable as %T", e, e2)
 	}
@@ -899,7 +899,7 @@ func TestTimeout_As(t *testing.T) {
 }
 
 func TestTimeout_Is(t *testing.T) {
-	e := timeout{}
+	e := httpError{}
 	if e.Is(err) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
@@ -907,18 +907,18 @@ func TestTimeout_Is(t *testing.T) {
 	if e.Is(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &timeout{}
+	e2 := &httpError{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := timeout{}
+	e3 := httpError{}
 	if !e.Is(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestTimeout_Unwrap(t *testing.T) {
-	e := timeout{Err: Err{c: fmt.Errorf("ttt")}}
+	e := httpError{Err: Err{c: fmt.Errorf("ttt")}}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)
@@ -926,23 +926,23 @@ func TestTimeout_Unwrap(t *testing.T) {
 }
 
 func TestIsUnauthorized(t *testing.T) {
-	e := unauthorized{}
+	e := httpError{s: http.StatusUnauthorized}
 	e1 := &Err{}
 	if IsUnauthorized(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &unauthorized{}
+	e2 := &httpError{s: http.StatusUnauthorized}
 	if !IsUnauthorized(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := unauthorized{}
+	e3 := httpError{s: http.StatusUnauthorized}
 	if !IsUnauthorized(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestUnauthorized_As(t *testing.T) {
-	e := unauthorized{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
+	e := httpError{Err: Err{m: "test", c: fmt.Errorf("ttt")}}
 	e0 := err
 	if e.As(e0) {
 		t.Errorf("%T should not be assertable as %T", e, e0)
@@ -960,7 +960,7 @@ func TestUnauthorized_As(t *testing.T) {
 	if e1.c != e.c {
 		t.Errorf("%T parent error should equal %T's, received %T[%s], expected %T[%s]", e1, e, e1.c, e1.c, e.c, e.c)
 	}
-	e2 := &unauthorized{}
+	e2 := &httpError{}
 	if !e.As(e2) {
 		t.Errorf("%T should be assertable as %T", e, e2)
 	}
@@ -989,7 +989,7 @@ func TestUnauthorized_As(t *testing.T) {
 }
 
 func TestUnauthorized_Is(t *testing.T) {
-	e := unauthorized{}
+	e := httpError{}
 	if e.Is(err) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
@@ -997,18 +997,18 @@ func TestUnauthorized_Is(t *testing.T) {
 	if e.Is(e1) {
 		t.Errorf("%T should not be a valid %T", e1, e)
 	}
-	e2 := &unauthorized{}
+	e2 := &httpError{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := unauthorized{}
+	e3 := httpError{}
 	if !e.Is(e3) {
 		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
 func TestUnauthorized_Unwrap(t *testing.T) {
-	e := unauthorized{Err: Err{c: fmt.Errorf("ttt")}}
+	e := httpError{Err: Err{c: fmt.Errorf("ttt")}}
 	w := e.Unwrap()
 	if w != e.c {
 		t.Errorf("Unwrap() returned: %T[%s], expected: %T[%s]", w, w, e.c, e.c)
@@ -1016,25 +1016,26 @@ func TestUnauthorized_Unwrap(t *testing.T) {
 }
 
 func TestUnauthorized_Challenge(t *testing.T) {
-	e := &unauthorized{Err: Err{c: fmt.Errorf("ttt")}}
+	e := &httpError{Err: Err{c: fmt.Errorf("ttt")}}
 	msgChallenge := "test challenge"
 	e = e.Challenge(msgChallenge)
 
-	if e.challenge != msgChallenge {
-		t.Errorf("Invalid challenge message for %T %s, expected %s", e, e.challenge, msgChallenge)
+	if e.extra != msgChallenge {
+		t.Errorf("Invalid challenge message for %T %s, expected %s", e, e.extra, msgChallenge)
 	}
 }
 
 func TestChallenge(t *testing.T) {
 	var errI error
 	msgChallenge := "test challenge"
-	e := unauthorized{
-		Err:       Err{c: fmt.Errorf("ttt")},
-		challenge: msgChallenge,
+	e := httpError{
+		s:     http.StatusUnauthorized,
+		Err:   Err{c: fmt.Errorf("ttt")},
+		extra: msgChallenge,
 	}
 	errI = &e
-	if e.challenge != msgChallenge {
-		t.Errorf("Invalid challenge message for %T %s, expected %s", e, e.challenge, msgChallenge)
+	if e.extra != msgChallenge {
+		t.Errorf("Invalid challenge message for %T %s, expected %s", e, e.extra, msgChallenge)
 	}
 	ch := Challenge(errI)
 	if ch != msgChallenge {

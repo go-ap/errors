@@ -82,24 +82,24 @@ func (e Err) StackTrace() StackTrace {
 }
 
 // Annotatef wraps an error with new message
-func Annotatef(e error, s string, args ...interface{}) *Err {
+func Annotatef(e error, s string, args ...any) *Err {
 	err := wrap(e, s, args...)
 	return &err
 }
 
 // Newf creaates a new error
-func Newf(s string, args ...interface{}) *Err {
+func Newf(s string, args ...any) *Err {
 	err := wrap(nil, s, args...)
 	return &err
 }
 
 // Errorf is an alias for Newf
-func Errorf(s string, args ...interface{}) error {
+func Errorf(s string, args ...any) error {
 	err := wrap(nil, s, args...)
 	return &err
 }
 
-func (e Err) Is(err interface{}) bool {
+func (e Err) Is(err any) bool {
 	switch err.(type) {
 	case **Err:
 		return true
@@ -113,7 +113,7 @@ func (e Err) Is(err interface{}) bool {
 }
 
 // As implements support for errors.As
-func (e *Err) As(err interface{}) bool {
+func (e *Err) As(err any) bool {
 	switch x := err.(type) {
 	case **Err:
 		*x = e
@@ -121,6 +121,12 @@ func (e *Err) As(err interface{}) bool {
 		*x = *e
 	case Err:
 		x = *e
+	case httpError:
+		x.Err = *e
+	case *httpError:
+		x.Err = *e
+	case **httpError:
+		(*x).Err = *e
 	default:
 		return false
 	}
@@ -171,7 +177,7 @@ func ancestorOfCause(ourStack stack, causeStack StackTrace) bool {
 	return true
 }
 
-func wrap(e error, s string, args ...interface{}) Err {
+func wrap(e error, s string, args ...any) Err {
 	err := Err{
 		c: e,
 		m: fmt.Sprintf(s, args...),

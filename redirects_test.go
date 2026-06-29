@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Test_redirect_Unwrap(t *testing.T) {
+func Test_httpError_Unwrap(t *testing.T) {
 	type fields struct {
 		c error
 		u string
@@ -34,10 +34,10 @@ func Test_redirect_Unwrap(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := redirect{
-				c: tt.fields.c,
-				u: tt.fields.u,
-				s: tt.fields.s,
+			r := httpError{
+				Err:   Err{c: tt.fields.c},
+				extra: tt.fields.u,
+				s:     tt.fields.s,
 			}
 			err := r.Unwrap()
 			if (err == nil) != (tt.want == nil) {

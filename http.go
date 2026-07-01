@@ -74,13 +74,13 @@ func FromResponse(resp *http.Response) error {
 
 	errors, err := UnmarshalJSON(body)
 	if err != nil {
-		return AnnotateFromStatus(nil, resp.StatusCode, "test")
+		return err
 	}
 	if len(errors) == 0 {
 		return nil
 	}
 
-	return AnnotateFromStatus(Join(errors...), resp.StatusCode, "test")
+	return Join(errors...)
 }
 
 func AnnotateFromStatus(err error, status int, s string, args ...any) error {

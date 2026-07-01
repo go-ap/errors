@@ -362,6 +362,9 @@ func isHttpError(e error) (*httpError, bool) {
 	switch err := e.(type) {
 	case *httpError:
 		return err, true
+	case *Err:
+		we := err.c
+		return isHttpError(we)
 	default:
 		return nil, false
 	}

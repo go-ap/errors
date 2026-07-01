@@ -38,7 +38,9 @@ func (e Err) Format(s fmt.State, verb rune) {
 		case s.Flag('+'):
 			if e.c != nil {
 				if em := e.c.Error(); em != "" {
-					io.WriteString(s, ": ")
+					if e.m != "" {
+						io.WriteString(s, ": ")
+					}
 					io.WriteString(s, em)
 				}
 			}
@@ -58,10 +60,14 @@ func (e Err) Format(s fmt.State, verb rune) {
 // Error implements the error interface
 func (e Err) Error() string {
 	s := strings.Builder{}
-	s.WriteString(e.m)
+	if e.m != "" {
+		s.WriteString(e.m)
+	}
 	if ch := errors.Unwrap(e); ch != nil {
 		if em := ch.Error(); em != "" {
-			s.WriteString(": ")
+			if e.m != "" {
+				s.WriteString(": ")
+			}
 			s.WriteString(em)
 		}
 	}

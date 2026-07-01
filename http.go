@@ -23,6 +23,15 @@ type httpError struct {
 	extra string
 }
 
+func (h *httpError) Error() string {
+	return h.Err.Error()
+}
+
+func (h *httpError) Is(err error) bool {
+	_, ok := err.(*httpError)
+	return ok || h.Err.Is(err)
+}
+
 func (h *httpError) As(err any) bool {
 	switch x := err.(type) {
 	case httpError:
@@ -33,6 +42,8 @@ func (h *httpError) As(err any) bool {
 		x.extra = h.extra
 	case **httpError:
 		*x = h
+	case **Err:
+		*x = &h.Err
 	case *Err:
 		*x = h.Err
 	case Err:
@@ -43,22 +54,14 @@ func (h *httpError) As(err any) bool {
 	return true
 }
 
-func (h *httpError) Is(err any) bool {
-	switch err.(type) {
-	case **httpError:
-		return true
-	case *httpError:
-		return true
-	case httpError:
-		return true
-	default:
-		return false
+func wrapErr(err error, s string, args ...any) *Err {
+	var e error
+	if err != nil {
+		e = Annotatef(err, s, args...)
+	} else {
+		e = Newf(s, args...)
 	}
-}
-
-func wrapErr(err error, s string, args ...any) Err {
-	e := Annotatef(err, s, args...)
-	asErr := Err{}
+	asErr := new(Err)
 	As(e, &asErr)
 	return asErr
 }
@@ -244,123 +247,121 @@ func WrapWithStatus(status int, err error, s string, args ...any) error {
 }
 
 func NotFoundf(s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusNotFound}
+	return &httpError{Err: *wrapErr(nil, s, args...), s: http.StatusNotFound}
 }
 
 func NewNotFound(e error, s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusNotFound}
+	return &httpError{Err: *wrapErr(e, s, args...), s: http.StatusNotFound}
 }
 
 func MethodNotAllowedf(s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusMethodNotAllowed}
+	return &httpError{Err: *wrapErr(nil, s, args...), s: http.StatusMethodNotAllowed}
 }
 
 func NewMethodNotAllowed(e error, s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusMethodNotAllowed}
+	return &httpError{Err: *wrapErr(e, s, args...), s: http.StatusMethodNotAllowed}
 }
 
 func NotAcceptablef(s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusNotAcceptable}
+	return &httpError{Err: *wrapErr(nil, s, args...), s: http.StatusNotAcceptable}
 }
 
 func NewNotAcceptable(e error, s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusNotAcceptable}
+	return &httpError{Err: *wrapErr(e, s, args...), s: http.StatusNotAcceptable}
 }
 
 func Conflictf(s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusConflict}
+	return &httpError{Err: *wrapErr(nil, s, args...), s: http.StatusConflict}
 }
 
 func NewConflict(e error, s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusConflict}
+	return &httpError{Err: *wrapErr(e, s, args...), s: http.StatusConflict}
 }
 
 func Gonef(s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusGone}
+	return &httpError{Err: *wrapErr(nil, s, args...), s: http.StatusGone}
 }
 
 func NewGone(e error, s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusGone}
+	return &httpError{Err: *wrapErr(e, s, args...), s: http.StatusGone}
 }
 
 func Forbiddenf(s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusForbidden}
+	return &httpError{Err: *wrapErr(nil, s, args...), s: http.StatusForbidden}
 }
 
 func NewForbidden(e error, s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusForbidden}
+	return &httpError{Err: *wrapErr(e, s, args...), s: http.StatusForbidden}
 }
 
 func NotImplementedf(s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusNotImplemented}
+	return &httpError{Err: *wrapErr(nil, s, args...), s: http.StatusNotImplemented}
 }
 
 func NewNotImplemented(e error, s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusNotImplemented}
+	return &httpError{Err: *wrapErr(e, s, args...), s: http.StatusNotImplemented}
 }
 
 func BadRequestf(s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusBadRequest}
+	return &httpError{Err: *wrapErr(nil, s, args...), s: http.StatusBadRequest}
 }
 
 func NewBadRequest(e error, s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusBadRequest}
+	return &httpError{Err: *wrapErr(e, s, args...), s: http.StatusBadRequest}
 }
 
 func Unauthorizedf(s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusUnauthorized}
+	return &httpError{Err: *wrapErr(nil, s, args...), s: http.StatusUnauthorized}
 }
 
 func NewUnauthorized(e error, s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusUnauthorized}
+	return &httpError{Err: *wrapErr(e, s, args...), s: http.StatusUnauthorized}
 }
 
 func UnsupportedMediaTypef(s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusUnsupportedMediaType}
+	return &httpError{Err: *wrapErr(nil, s, args...), s: http.StatusUnsupportedMediaType}
 }
 
 func NewUnsupportedMedia(e error, s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusGone}
+	return &httpError{Err: *wrapErr(e, s, args...), s: http.StatusGone}
 }
 
 func NotHTTPVersionNotSupportedf(s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusHTTPVersionNotSupported}
+	return &httpError{Err: *wrapErr(nil, s, args...), s: http.StatusHTTPVersionNotSupported}
 }
 
 func NewHTTPVersionNotSupported(e error, s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusHTTPVersionNotSupported}
+	return &httpError{Err: *wrapErr(e, s, args...), s: http.StatusHTTPVersionNotSupported}
 }
 
 func RequestTimeoutf(s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusRequestTimeout}
+	return &httpError{Err: *wrapErr(nil, s, args...), s: http.StatusRequestTimeout}
 }
 
 func NewRequestTimeout(e error, s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusRequestTimeout}
+	return &httpError{Err: *wrapErr(e, s, args...), s: http.StatusRequestTimeout}
 }
 
 func BadGatewayf(s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusBadGateway}
+	return &httpError{Err: *wrapErr(nil, s, args...), s: http.StatusBadGateway}
 }
 
 func NewBadGateway(e error, s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusBadGateway}
+	return &httpError{Err: *wrapErr(e, s, args...), s: http.StatusBadGateway}
 }
 
 func ServiceUnavailablef(s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(nil, s, args...), s: http.StatusServiceUnavailable}
+	return &httpError{Err: *wrapErr(nil, s, args...), s: http.StatusServiceUnavailable}
 }
 
 func NewServiceUnavailable(e error, s string, args ...any) *httpError {
-	return &httpError{Err: wrapErr(e, s, args...), s: http.StatusServiceUnavailable}
+	return &httpError{Err: *wrapErr(e, s, args...), s: http.StatusServiceUnavailable}
 }
 
 func isHttpError(e error) (*httpError, bool) {
 	switch err := e.(type) {
 	case *httpError:
 		return err, true
-	case httpError:
-		return &err, true
 	default:
 		return nil, false
 	}
@@ -371,8 +372,8 @@ func isHttpErrorWithStatus(e error, st int) bool {
 	if ok {
 		return err.s == st
 	}
-	err = &httpError{}
-	return As(e, err) && err.s == st
+	err = new(httpError)
+	return As(e, &err) && err.s == st
 }
 
 func IsServiceUnavailable(e error) bool {
@@ -435,7 +436,7 @@ func (h *httpError) Challenge(c string) *httpError {
 
 // Challenge returns the challenge of the err parameter if it's an httpError type error
 func Challenge(err error) string {
-	un := httpError{}
+	un := new(httpError)
 	if ok := As(err, &un); ok {
 		return un.extra
 	}
@@ -467,7 +468,7 @@ func (h ErrorHandlerFn) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func Location(err error) string {
 	r := new(httpError)
-	if As(err, r) {
+	if As(err, &r) {
 		return r.extra
 	}
 	return ""
@@ -505,7 +506,7 @@ func HttpErrors(err error) []Http {
 			}
 		} else {
 			local := new(Err)
-			if ok := As(err, local); ok {
+			if ok := As(err, &local); ok {
 				if withBacktrace {
 					trace = local.StackTrace()
 				}
@@ -534,7 +535,7 @@ func HttpErrors(err error) []Http {
 func HttpStatus(e error) int {
 	if IsRedirect(e) {
 		r := new(httpError)
-		if As(e, r) {
+		if As(e, &r) {
 			return r.s
 		}
 	}

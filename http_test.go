@@ -215,10 +215,6 @@ func TestIsBadRequest(t *testing.T) {
 	if !IsBadRequest(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
 	}
-	e3 := httpError{s: http.StatusBadRequest}
-	if !IsBadRequest(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
-	}
 }
 
 func TestBadRequest_As(t *testing.T) {
@@ -274,16 +270,12 @@ func TestBadRequest_Is(t *testing.T) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
 	e1 := &Err{}
-	if e.Is(e1) {
-		t.Errorf("%T should not be a valid %T", e1, e)
+	if !e.Is(e1) {
+		t.Errorf("%T should be a valid %T", e1, e)
 	}
 	e2 := &httpError{s: http.StatusBadRequest}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{}
-	if !e.Is(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
@@ -304,10 +296,6 @@ func TestIsForbidden(t *testing.T) {
 	e2 := &httpError{s: http.StatusForbidden}
 	if !IsForbidden(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{s: http.StatusForbidden}
-	if !IsForbidden(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
@@ -364,16 +352,12 @@ func TestForbidden_Is(t *testing.T) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
 	e1 := &Err{}
-	if e.Is(e1) {
+	if !e.Is(e1) {
 		t.Errorf("%T should be a valid %T", e1, e)
 	}
 	e2 := &httpError{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{}
-	if !e.Is(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
@@ -394,10 +378,6 @@ func TestIsMethodNotAllowed(t *testing.T) {
 	e2 := &httpError{s: http.StatusMethodNotAllowed}
 	if !IsMethodNotAllowed(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{s: http.StatusMethodNotAllowed}
-	if !IsMethodNotAllowed(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
@@ -454,16 +434,12 @@ func TestMethodNotAllowed_Is(t *testing.T) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
 	e1 := &Err{}
-	if e.Is(e1) {
-		t.Errorf("%T should not be a valid %T", e1, e)
+	if !e.Is(e1) {
+		t.Errorf("%T should be a valid %T", e1, e)
 	}
 	e2 := &httpError{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{}
-	if !e.Is(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
@@ -484,10 +460,6 @@ func TestIsNotFound(t *testing.T) {
 	e2 := &httpError{s: http.StatusNotFound}
 	if !IsNotFound(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{s: http.StatusNotFound}
-	if !IsNotFound(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
@@ -544,16 +516,12 @@ func TestNotFound_Is(t *testing.T) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
 	e1 := &Err{}
-	if e.Is(e1) {
-		t.Errorf("%T should not be a valid %T", e1, e)
+	if !e.Is(e1) {
+		t.Errorf("%T should be a valid %T", e1, e)
 	}
 	e2 := &httpError{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{}
-	if !e.Is(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
@@ -574,10 +542,6 @@ func TestIsNotImplemented(t *testing.T) {
 	e2 := &httpError{s: http.StatusNotImplemented}
 	if !IsNotImplemented(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{s: http.StatusNotImplemented}
-	if !IsNotImplemented(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
@@ -634,16 +598,12 @@ func TestNotImplemented_Is(t *testing.T) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
 	e1 := &Err{}
-	if e.Is(e1) {
-		t.Errorf("%T should not be a valid %T", e1, e)
+	if !e.Is(e1) {
+		t.Errorf("%T should be a valid %T", e1, e)
 	}
 	e2 := &httpError{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{}
-	if !e.Is(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
@@ -664,10 +624,6 @@ func TestIsHTTPVersionNotSupported(t *testing.T) {
 	e2 := &httpError{s: http.StatusHTTPVersionNotSupported}
 	if !IsHTTPVersionNotSupported(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{s: http.StatusHTTPVersionNotSupported}
-	if !IsHTTPVersionNotSupported(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
@@ -724,16 +680,12 @@ func TestNotSupported_Is(t *testing.T) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
 	e1 := &Err{}
-	if e.Is(e1) {
-		t.Errorf("%T should not be a valid %T", e1, e)
+	if !e.Is(e1) {
+		t.Errorf("%T should be a valid %T", e1, e)
 	}
 	e2 := &httpError{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{}
-	if !e.Is(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
@@ -754,10 +706,6 @@ func TestIsStatusNotAcceptable(t *testing.T) {
 	e2 := &httpError{s: http.StatusNotAcceptable}
 	if !IsStatusNotAcceptable(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{s: http.StatusNotAcceptable}
-	if !IsStatusNotAcceptable(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
@@ -814,16 +762,12 @@ func TestNotValid_Is(t *testing.T) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
 	e1 := &Err{}
-	if e.Is(e1) {
-		t.Errorf("%T should not be a valid %T", e1, e)
+	if !e.Is(e1) {
+		t.Errorf("%T should be a valid %T", e1, e)
 	}
 	e2 := &httpError{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{}
-	if !e.Is(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
@@ -844,10 +788,6 @@ func TestIsRequestTimeout(t *testing.T) {
 	e2 := &httpError{s: http.StatusRequestTimeout}
 	if !IsRequestTimeout(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{s: http.StatusRequestTimeout}
-	if !IsRequestTimeout(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
@@ -904,16 +844,12 @@ func TestTimeout_Is(t *testing.T) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
 	e1 := &Err{}
-	if e.Is(e1) {
-		t.Errorf("%T should not be a valid %T", e1, e)
+	if !e.Is(e1) {
+		t.Errorf("%T should be a valid %T", e1, e)
 	}
 	e2 := &httpError{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{}
-	if !e.Is(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
@@ -934,10 +870,6 @@ func TestIsUnauthorized(t *testing.T) {
 	e2 := &httpError{s: http.StatusUnauthorized}
 	if !IsUnauthorized(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{s: http.StatusUnauthorized}
-	if !IsUnauthorized(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 
@@ -994,16 +926,12 @@ func TestUnauthorized_Is(t *testing.T) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
 	e1 := &Err{}
-	if e.Is(e1) {
-		t.Errorf("%T should not be a valid %T", e1, e)
+	if !e.Is(e1) {
+		t.Errorf("%T should be a valid %T", e1, e)
 	}
 	e2 := &httpError{}
 	if !e.Is(e2) {
 		t.Errorf("%T should be a valid %T", e2, e)
-	}
-	e3 := httpError{}
-	if !e.Is(e3) {
-		t.Errorf("%T should be a valid %T", e3, e)
 	}
 }
 

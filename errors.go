@@ -58,7 +58,7 @@ func (e Err) Format(s fmt.State, verb rune) {
 }
 
 // Error implements the error interface
-func (e Err) Error() string {
+func (e *Err) Error() string {
 	s := strings.Builder{}
 	if e.m != "" {
 		s.WriteString(e.m)
@@ -78,7 +78,7 @@ func (e Err) Error() string {
 }
 
 // Unwrap implements the errors.Wrapper interface
-func (e Err) Unwrap() error {
+func (e *Err) Unwrap() error {
 	return e.c
 }
 
@@ -90,32 +90,24 @@ func (e Err) StackTrace() StackTrace {
 // Annotatef wraps an error with new message
 func Annotatef(e error, s string, args ...any) *Err {
 	err := wrap(e, s, args...)
-	return &err
+	return err
 }
 
 // Newf creaates a new error
 func Newf(s string, args ...any) *Err {
 	err := wrap(nil, s, args...)
-	return &err
+	return err
 }
 
 // Errorf is an alias for Newf
 func Errorf(s string, args ...any) error {
 	err := wrap(nil, s, args...)
-	return &err
+	return err
 }
 
-func (e Err) Is(err any) bool {
-	switch err.(type) {
-	case **Err:
-		return true
-	case *Err:
-		return true
-	case Err:
-		return true
-	default:
-		return false
-	}
+func (e Err) Is(err error) bool {
+	_, ok := err.(*Err)
+	return ok || Is(e.c, err)
 }
 
 // As implements support for errors.As
@@ -183,7 +175,7 @@ func ancestorOfCause(ourStack stack, causeStack StackTrace) bool {
 	return true
 }
 
-func wrap(e error, s string, args ...any) Err {
+func wrap(e error, s string, args ...any) *Err {
 	err := Err{
 		c: e,
 		m: fmt.Sprintf(s, args...),
@@ -198,5 +190,5 @@ func wrap(e error, s string, args ...any) Err {
 			err.t = *stack
 		}
 	}
-	return err
+	return &err
 }

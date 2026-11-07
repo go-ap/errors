@@ -28,8 +28,8 @@ func (h *httpError) Error() string {
 }
 
 func (h *httpError) Is(err error) bool {
-	_, ok := err.(*httpError)
-	return ok || h.Err.Is(err)
+	herr, ok := err.(*httpError)
+	return (ok && (herr.s == 0 || herr.s == h.s)) || h.Err.Is(err)
 }
 
 func (h *httpError) As(err any) bool {

@@ -921,7 +921,7 @@ func TestUnauthorized_As(t *testing.T) {
 }
 
 func TestUnauthorized_Is(t *testing.T) {
-	e := httpError{}
+	e := httpError{s: http.StatusUnauthorized}
 	if e.Is(err) {
 		t.Errorf("%T should not be a valid %T", err, e)
 	}
